@@ -55,7 +55,7 @@ class SaveFile:
         file_path = path.join(location, file_name)
 
         if method == 'csv':
-            df.reset_index().to_csv(file_path, index=False, encoding='utf-8-sig')
+            df.to_csv(file_path, index=False, encoding='utf-8-sig')
         # TODO: Implement other save df methods
         if method == 'latex':
             raise ValueError('Method NOT yet implemented')

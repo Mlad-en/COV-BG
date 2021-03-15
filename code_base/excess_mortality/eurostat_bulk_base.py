@@ -24,7 +24,7 @@ class GetBulkEurostatDataBase:
         self.retain_demo_columns = RETAIN_COLUMNS[self.eurostat_data]
         self.replace_location_name = COUNTRY_REPLACE[self.eurostat_data]
 
-        self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, compression='gzip', sep='\t', encoding='utf-8-sig')
+        self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, compression='gzip', sep='\t', encoding='utf-8-sig', low_memory=False)
 
     @property
     def url(self) -> str:

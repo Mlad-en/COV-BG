@@ -8,6 +8,7 @@ from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_excess_mortality import ExcessMortalityMapper
 from code_base.excess_mortality.utils import SaveFile
 
+
 class CalcExcessMortality(SaveFile):
 
     def __init__(self,
@@ -108,6 +109,8 @@ class CalcExcessMortality(SaveFile):
                             (
                                     (df['Year'] == 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)
                             )]
+        curr_year_mort.drop('Age', axis=1, inplace=True)
+        curr_year_mort = curr_year_mort.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
         return curr_year_mort
 
     @staticmethod
@@ -119,7 +122,7 @@ class CalcExcessMortality(SaveFile):
 
         if param == 'year':
             curr_year.drop('Week', axis=1, inplace=True)
-            curr_year = curr_year.groupby(['Age', 'Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
+            curr_year = curr_year.groupby(['Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
 
         curr_year = curr_year.merge(prev_years,
                                     left_on=merge_data_on[param],
@@ -143,13 +146,12 @@ class CalcExcessMortality(SaveFile):
         df['Excess Mortality ±'] = df['Excess_mortality_Mean'].map(str) + ' (±' + df['Excess_mortality_fluc'].map(
             str) + ')'
         df['P_score ±'] = df['P_Score'].map(str) + '% (±' + df['P_score_fluctuation'].map(str) + '%)'
-
         return df
 
     def calc_excess_mortality(self,
                               df: pd.DataFrame,
-                              age: List = ['Total'],
-                              sex: List = ['Total'],
+                              age: List,
+                              sex: List,
                               weekly: bool = False) -> pd.DataFrame:
         time_params = {
             False: 'year',
@@ -187,10 +189,10 @@ class CalcExcessMortality(SaveFile):
         df = mortality_df
         df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
 
-        total_deaths = self.calc_excess_mortality(df)
+        total_deaths = self.calc_excess_mortality(df, age=age, sex=sex)
         total_file = self.save_df(total_deaths, self.file_loc, total_file_name)
 
-        weekly_deaths = self.calc_excess_mortality(df, weekly=True)
+        weekly_deaths = self.calc_excess_mortality(df, weekly=True, age=age, sex=sex)
         weekly_file = self.save_df(weekly_deaths, self.file_loc, weekly_file_name)
 
         file_locs = {
