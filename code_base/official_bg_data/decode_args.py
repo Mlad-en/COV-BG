@@ -1,9 +1,3 @@
-BY_REGION_FILT_COLS = ['Дата',
-                       'BLG_ALL', 'BGS_ALL', 'VAR_ALL', 'VTR_ALL', 'VID_ALL', 'VRC_ALL', 'GAB_ALL', 'DOB_ALL',
-                       'KRZ_ALL', 'KNL_ALL', 'LOV_ALL', 'MON_ALL', 'PAZ_ALL', 'PER_ALL', 'PVN_ALL', 'PDV_ALL',
-                       'RAZ_ALL', 'RSE_ALL', 'SLS_ALL', 'SLV_ALL', 'SML_ALL', 'SFO_ALL', 'SOF_ALL', 'SZR_ALL',
-                       'TGV_ALL', 'HKV_ALL', 'SHU_ALL', 'JAM_ALL']
-
 BY_REGION_DECODE_COLUMNS = {
     'Дата': 'Date',
     'BLG_ALL': 'Blagoevgrad',
@@ -41,3 +35,23 @@ BY_REGION_MELT_VARS = ['Blagoevgrad', 'Burgas', 'Varna', 'Veliko Tarnovo', 'Vidi
                        'Montana', 'Pazardzhik', 'Pernik', 'Pleven', 'Plovdiv', 'Razgrad',
                        'Ruse', 'Silistra', 'Sliven', 'Smolyan', 'Sofia', 'Sofia (stolitsa)',
                        'Stara Zagora', 'Targovishte', 'Haskovo', 'Shumen', 'Yambol']
+
+GENERAL_DECODE_COLUMNS = {
+    'Дата': 'Date',
+    'Направени тестове': 'Tests_Done',
+    'Тестове за денонощие': 'Tests_Done_24h',
+    'Потвърдени случаи': 'Confirmed_Cases',
+    'Активни случаи': 'Active_cases',
+    'Нови случаи за денонощие': 'Confirmed_Cases_24h',
+    'Хоспитализирани': 'Hospitalized',
+    'В интензивно отделение': 'Intensive_Care',
+    'Излекувани': 'Recovered',
+    'Излекувани за денонощие': 'Recovered_24h',
+    'Починали': 'Fatalities',
+    'Починали за денонощие': 'Fatalities_24h',
+}
+
+RENAME_WEEKLY_COLUMNS = {
+            'Tests_Done_24h': 'Tests_week',
+            'Confirmed_Cases_24h': 'Confirmed_Cases_Week'
+        }
