@@ -79,8 +79,9 @@ class GetOfficialBGStats(SaveFile):
         data = self.get_data('general')
         data = data[(data['Date'] >= filt_str_dates) & (data['Date'] <= filt_end_dates)]
         data['Week'] = data['Date'].dt.strftime('%W').map(int) + 1
-        df1 = data[['Week', 'Tests_Done_24h', 'Confirmed_Cases_24h']]
-        df1 = df1.groupby(['Week'], as_index=False).sum(['Tests_Done_24h', 'Confirmed_Cases_24h'])
+        data['Year'] = data['Date'].dt.strftime('%Y').map(int)
+        df1 = data[['Year', 'Week', 'Tests_Done_24h', 'Confirmed_Cases_24h']]
+        df1 = df1.groupby(['Year', 'Week'], as_index=False).sum(['Tests_Done_24h', 'Confirmed_Cases_24h'])
         df1['Percent_Positive_Cases'] = df1.apply(
             lambda x: x['Confirmed_Cases_24h'] / x['Tests_Done_24h'] * 100,
             axis=1).round(1)
