@@ -8,7 +8,10 @@ from code_base.excess_mortality.utils import *
 from url_constants import *
 
 class GetBulkEurostatDataBase:
-    def __init__(self, eurostat_data: str, add_current_year: bool = False, current_year_weeks: Optional[int] = None):
+    def __init__(self, eurostat_data: str,
+                 add_current_year: bool = False,
+                 current_year_weeks: Optional[int] = None,
+                 zipped: bool = True):
 
         self.eurostat_data: str = eurostat_data
 
@@ -24,7 +27,10 @@ class GetBulkEurostatDataBase:
         self.retain_demo_columns = RETAIN_COLUMNS[self.eurostat_data]
         self.replace_location_name = COUNTRY_REPLACE[self.eurostat_data]
 
-        self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, compression='gzip', sep='\t', encoding='utf-8-sig', low_memory=False)
+        if zipped:
+            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, compression='gzip', sep='\t', encoding='utf-8-sig', low_memory=False)
+        else:
+            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, encoding='utf-8-sig')
 
     @property
     def url(self) -> str:
@@ -45,8 +51,8 @@ class GetBulkEurostatDataBase:
         self.eurostat_df[split_into] = self.eurostat_df.iloc[:, col_ind].str.split(separator, expand=True)
         self.eurostat_df.drop(split_from, axis=1, inplace=True)
 
-    def filter_cols(self, year_week_columns):
-        filt_columns = self.retain_demo_columns + year_week_columns
+    def filter_cols(self, filt_cols):
+        filt_columns = self.retain_demo_columns + filt_cols
         self.eurostat_df.drop(self.eurostat_df.columns[
                                   ~self.eurostat_df.columns.isin(filt_columns)],
                               axis=1,
@@ -59,7 +65,7 @@ class GetBulkEurostatDataBase:
             'Age': EUROSTAT_AGES_CONVERSION
         }
         for key, val in decode_demo_info.items():
-            self.eurostat_df[key] = self.eurostat_df.apply(lambda x: val[x[key]], axis=1)
+            self.eurostat_df[key] = self.eurostat_df.apply(lambda x: val.get(x[key]), axis=1)
 
     def save_df(self, file_name: str, loc: str, method: str = 'csv'):
 

@@ -46,7 +46,7 @@ class SaveFile:
         pass
 
     @staticmethod
-    def save_df(df: pd.DataFrame, location, file_name: str, method: str = 'csv') -> str:
+    def save_df_to_file(df: pd.DataFrame, location, file_name: str, method: str = 'csv') -> str:
 
         file_type = FILE_EXT_TYPE.get(method)
         if not file_type:

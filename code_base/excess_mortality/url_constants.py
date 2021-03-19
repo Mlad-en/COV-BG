@@ -8,5 +8,7 @@ EUROSTAT_DATA = {
             '/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=data%2Fdemo_r_mwk_05.tsv.gz',
         'excess_mortality_by_sex_age_nuts3':
             '/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?sort=1&file=data%2Fdemo_r_mweek3.tsv.gz',
+        'europe_population_by_age_and_sex':
+            '/eurostat/api/dissemination/sdmx/2.1/data/demo_pjangroup/?&format=CSV'
     },
 }

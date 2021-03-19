@@ -2,6 +2,7 @@ from math import sqrt
 from os import path
 from typing import Optional, List, Dict
 
+import numpy as np
 import pandas as pd
 
 from code_base.excess_mortality.folder_constants import *
@@ -133,15 +134,19 @@ class CalcExcessMortality(SaveFile):
     def add_merged_data_attrs(df: pd.DataFrame) -> pd.DataFrame:
         df['Excess_mortality_Mean'] = df.apply(lambda x: x['Mortality'] - x['Mean_Mortality'], axis=1).round(1)
         df['Excess_mortality_fluc'] = df.apply(lambda x:
-                                             x['Excess_mortality_Mean'] - (x['Mortality'] - x['Upper_bound_Mean_mortality']),
+                                             abs(x['Excess_mortality_Mean'] - (x['Mortality'] - x['Lower_bound_Mean_mortality'])),
                                              axis=1).round(1)
         df['P_Score'] = df.apply(
-            lambda x: ((x['Mortality'] - x['Mean_Mortality']) / x['Mean_Mortality']) * 100,
-            axis=1).round(1)
+                lambda x: ((x['Mortality'] - x['Mean_Mortality']) / x['Mean_Mortality']) * 100
+                if x['Mean_Mortality']!=0 else 0,
+                axis=1).round(1)
         df['P_score_fluctuation'] = df.apply(
-            lambda x: (x['P_Score'] - (
-                        ((x['Mortality'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100)),
-            axis=1).round(1)
+                lambda x: (x['P_Score'] - (
+                            ((x['Mortality'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100))
+            if x['Upper_bound_Mean_mortality'] !=0
+                else np.nan,
+                axis=1).round(1)
+
         df['Mean Mortality ±'] = df['Mean_Mortality'].round(1).map(str) + ' (±' + df['Conf_interval'].map(str) + ')'
         df['Excess Mortality ±'] = df['Excess_mortality_Mean'].map(str) + ' (±' + df['Excess_mortality_fluc'].map(
             str) + ')'
@@ -150,8 +155,6 @@ class CalcExcessMortality(SaveFile):
 
     def calc_excess_mortality(self,
                               df: pd.DataFrame,
-                              age: List,
-                              sex: List,
                               weekly: bool = False) -> pd.DataFrame:
         time_params = {
             False: 'year',
@@ -159,18 +162,20 @@ class CalcExcessMortality(SaveFile):
         }
         time_param = time_params[weekly]
 
-        df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
         prev_years = self.build_prev_year_mort_base(df)
         prev_years = self.add_std(prev_years, time_param)
         prev_years = self.add_cmn_prev_year_attrs(prev_years)
 
         curr_year = self.build_curr_year_mort_base(df=df)
-        merged = self.merge_weekly_dfs(curr_year=curr_year, prev_years=prev_years,  param=time_param)
-        merged = self.add_merged_data_attrs(merged)
+        merged: pd.DataFrame = self.merge_weekly_dfs(curr_year=curr_year, prev_years=prev_years,  param=time_param)
+        merged: pd.DataFrame = self.add_merged_data_attrs(merged)
 
         return merged
 
-    def excess_mortality_to_file(self, mortality_df: pd.DataFrame, sex: List = ['Total'], age: List = ['Total']) -> Dict:
+    def excess_mortality_to_file(self,
+                                 mortality_df: pd.DataFrame,
+                                 sex: List = ['Total'],
+                                 age: List = ['Total'],) -> Dict:
         # TODO: Add filtering for Countries that do not have data for all weeks required for analysis.
         # TODO: Add filtering for week start and end ranges.
         """
@@ -180,20 +185,26 @@ class CalcExcessMortality(SaveFile):
         :return: Function returns a dictionary of the file location of the per week deaths (key: weekly_deaths)
         and total deaths (key: total_deaths)
         """
-
-        country = f'{self.cntry}_' if self.cntry else ''
-        age_f = self.get_age_ranges(age)
-        weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
-        total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
-
         df = mortality_df
         df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
 
-        total_deaths = self.calc_excess_mortality(df, age=age, sex=sex)
-        total_file = self.save_df(total_deaths, self.file_loc, total_file_name)
+        if not self.cntry:
+            year = 2021 if self.add_current_year else 2020
+            week = self.current_year_weeks if self.add_current_year else 53
+            filt_mask = ((df['Year'] == year) & (df['Week'] == week) & (df['Mortality'].notnull()))
+            countries_w_uptodate_data = df[filt_mask].loc[:, 'Location'].drop_duplicates().to_list()
+            df = df[df['Location'].isin(countries_w_uptodate_data)]
 
-        weekly_deaths = self.calc_excess_mortality(df, weekly=True, age=age, sex=sex)
-        weekly_file = self.save_df(weekly_deaths, self.file_loc, weekly_file_name)
+        country = f'{self.cntry}_' if self.cntry else 'EUROPE_'
+        age_f = self.get_age_ranges(age)
+
+        total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
+        total_deaths = self.calc_excess_mortality(df)
+        total_file = self.save_df_to_file(total_deaths, self.file_loc, total_file_name)
+
+        weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
+        weekly_deaths = self.calc_excess_mortality(df, weekly=True)
+        weekly_file = self.save_df_to_file(weekly_deaths, self.file_loc, weekly_file_name)
 
         file_locs = {
             'total_deaths': total_file,

@@ -24,4 +24,3 @@ EUROSTAT_POPULATION = {
         'population': '/eurostat/api/dissemination/sdmx/2.1/data/tps00001/A.JAN.BG?format=CSV&TIME_PERIOD=2020'
     }
 }
-

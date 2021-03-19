@@ -3,21 +3,25 @@ from code_base.excess_mortality.decode_loc_vars import *
 DECODE_DEMO_COL = {
     'excess_mortality_by_sex_age_country': 'age,sex,unit,geo\\time',
     'excess_mortality_by_sex_age_nuts3': 'unit,sex,age,geo\\time',
+    'europe_population_by_age_and_sex': 'freq;unit;sex;age;geo\TIME_PERIOD'
 }
 
 DECODE_DEMO_REPL = {
     'excess_mortality_by_sex_age_country': ['Age', 'Sex', 'Unit', 'Location'],
     'excess_mortality_by_sex_age_nuts3': ['Unit', 'Sex', 'Age', 'Location'],
+    'europe_population_by_age_and_sex': ['Frequency', 'Unit', 'Sex', 'Age', 'Location']
 }
 
 RETAIN_COLUMNS = {
     'excess_mortality_by_sex_age_country': ['Age', 'Sex', 'Location'],
     'excess_mortality_by_sex_age_nuts3': ['Age', 'Sex', 'Location'],
+    'europe_population_by_age_and_sex': ['2020 ', 'Sex', 'Age', 'Location']
 }
 
 COUNTRY_REPLACE = {
     'excess_mortality_by_sex_age_country': EU_COUNTRIES_ISO_2_DECODES,
     'excess_mortality_by_sex_age_nuts3': EU_DECODE_NUTS3_REGIONS,
+    'europe_population_by_age_and_sex': EU_COUNTRIES_ISO_2_DECODES
 }
 
 FILE_EXT_TYPE = {
