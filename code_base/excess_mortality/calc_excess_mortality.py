@@ -198,14 +198,13 @@ class CalcExcessMortality(SaveFile):
                                  pop_df: pd.DataFrame,
                                  sex: List = ['Total'],
                                  age: List = ['Total'],
-                                 ) -> Dict:
-        # TODO: Add filtering for Countries that do not have data for all weeks required for analysis.
-        # TODO: Add filtering for week start and end ranges.
+                                 exclude_cntrs: Optional[List] = ['']) -> Dict:
         """
         :param mortality_df: Add reference to the get_mortality_df attribute.
         :param pop_df:
         :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
         :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
+        :param exclude_cntrs:
         :return: Function returns a dictionary of the file location of the per week deaths (key: weekly_deaths)
         and total deaths (key: total_deaths)
         """
@@ -215,7 +214,10 @@ class CalcExcessMortality(SaveFile):
         if not self.cntry:
             year = 2021 if self.add_current_year else 2020
             week = self.current_year_weeks if self.add_current_year else 53
-            filt_mask = ((df['Year'] == year) & (df['Week'] == week) & (df['Mortality'].notnull()))
+            filt_mask = ((df['Year'] == year)
+                         & (df['Week'] == week)
+                         & (df['Mortality'].notnull())
+                         & ~(df['Location'].isin(exclude_cntrs)))
             countries_w_uptodate_data = df[filt_mask].loc[:, 'Location'].drop_duplicates().to_list()
             df = df[df['Location'].isin(countries_w_uptodate_data)]
 
