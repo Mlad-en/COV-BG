@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional
 
 import pandas as pd
 from requests import post
@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 
 from code_base.official_bg_data.decode_args import *
 from code_base.official_bg_data.url_constants import *
-# TODO: Move SaveFile class to separate package
-from code_base.excess_mortality.utils import SaveFile
+from code_base.utils.save_file_utils import SaveFile
 
 
 class GetOfficialBGStats(SaveFile):
@@ -64,7 +63,7 @@ class GetOfficialBGStats(SaveFile):
         df.set_index('Date', inplace=True)
         return df
 
-    # TODO: Implement functions for general stats, by age stats and testing stats.
+    # TODO: Implement functions for by age stats and testing stats.
     def get_tests_to_cases_by_week(self,
                                    start_year: int = 2020,
                                    start_month: int = 6,

@@ -1,6 +1,4 @@
-from os import path
-
-from code_base.folder_constants import *
+from code_base.utils.folder_constants import *
 
 # Source Data
 source_excess_mortality = path.join(source_data, 'Excess Mortality')

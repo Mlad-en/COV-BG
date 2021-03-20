@@ -20,12 +20,14 @@ if __name__ == '__main__':
 
     eu_mortality = CalcExcessMortality()
     mortality = eu_mortality.get_mortality_df
+    #
+    # pop = GetEUPopulation()
+    # pop.clean_up_df()
+    # pop_dt = pop.get_age_sex_cntry_pop()
+    # eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs)
+    #
+    # for age in age_groups:
+    #     pop_dt = pop.get_age_sex_cntry_pop(sex=sex, age=age)
+    #     eu_mortality.excess_mortality_to_file(mortality, pop_dt, sex=sex, age=age, exclude_cntrs=exclude_cntrs)
 
-    pop = GetEUPopulation()
-    pop.clean_up_df()
-    pop_dt = pop.get_age_sex_cntry_pop()
-    eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs)
-
-    for age in age_groups:
-        pop_dt = pop.get_age_sex_cntry_pop(sex=sex, age=age)
-        eu_mortality.excess_mortality_to_file(mortality, pop_dt, sex=sex, age=age, exclude_cntrs=exclude_cntrs)
+    eu_mortality.calc_excess_mortality(mortality, add_age=True).to_csv('test.csv')

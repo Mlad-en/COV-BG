@@ -1,5 +1,4 @@
 from math import sqrt
-from os import path
 from typing import Optional, List, Dict
 
 import numpy as np
@@ -7,7 +6,7 @@ import pandas as pd
 
 from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_excess_mortality import ExcessMortalityMapper
-from code_base.excess_mortality.utils import SaveFile
+from code_base.utils.save_file_utils import SaveFile
 
 
 class CalcExcessMortality(SaveFile):
@@ -53,18 +52,26 @@ class CalcExcessMortality(SaveFile):
     @staticmethod
     def build_prev_year_mort_base(df: pd.DataFrame,
                                   week_start: int = 10,
-                                  week_end: int = 53) -> pd.DataFrame:
+                                  week_end: int = 53,
+                                  add_age: bool = False) -> pd.DataFrame:
         """
         :param df: Provide a Dataframe object containing weekly mortality.
         :param week_start: Defines the starting week of the previous year comparison. Default = 10
         :param week_end: Defines the ending week of the previous year comparison. Default = 53
+        :param add_age:
         :return: Returns a pivoted version of the provided Dataframe, filtered by year (2015-2019) and weeks.
         The returned Dataframe includes Mean Mortality.
         """
         pivoted = df[(df['Year'] < 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)].copy()
-        pivoted.drop('Age', axis=1, inplace=True)
-        pivoted = pivoted.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-        pivoted = pivoted.pivot(index=['Sex', 'Location', 'Week'], columns='Year', values='Mortality').reset_index()
+
+        if not add_age:
+            pivoted.drop('Age', axis=1, inplace=True)
+            pivoted = pivoted.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+            pivoted = pivoted.pivot(index=['Sex', 'Location', 'Week'], columns='Year', values='Mortality').reset_index()
+        else:
+            pivoted = pivoted.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+            pivoted = pivoted.pivot(index=['Age', 'Sex', 'Location', 'Week'], columns='Year', values='Mortality').reset_index()
+
         pivoted['Mean_Mortality'] = pivoted[[2015, 2016, 2017, 2018, 2019]].mean(axis=1).round(1)
 
         return pivoted
@@ -76,18 +83,25 @@ class CalcExcessMortality(SaveFile):
         return df
 
     @staticmethod
-    def setup_yearly_std(df: pd.DataFrame) -> pd.DataFrame:
+    def setup_yearly_std(df: pd.DataFrame, add_age: bool = False) -> pd.DataFrame:
         # Remove Weekly column and aggregate weekly mortality.
+        group_params = {
+            True: ['Age', 'Sex', 'Location'],
+            False: ['Sex', 'Location'],
+        }
         df.drop('Week', axis=1, inplace=True)
-        df = df.groupby(['Sex', 'Location'], as_index=False).sum('Mortality')
+        df = df.groupby(group_params[add_age], as_index=False).sum('Mortality')
         return df
 
-    def add_std(self, df, setup_param: str = 'year') -> pd.DataFrame:
+    def add_std(self, df, setup_param: str = 'year', add_age: bool = False) -> pd.DataFrame:
         setup = {
             'year': self.setup_yearly_std,
             'week': self.setup_weekly_std
         }
-        df = setup[setup_param](df)
+        if add_age and setup_param == 'year':
+            df = setup[setup_param](df, add_age)
+        else:
+            df = setup[setup_param](df)
         df['STD'] = df.loc[:, [2015, 2016, 2017, 2018, 2019]].std(axis=1, ddof=0).round(1)
 
         return df
@@ -104,26 +118,39 @@ class CalcExcessMortality(SaveFile):
     @staticmethod
     def build_curr_year_mort_base(df: pd.DataFrame,
                                   week_start: int = 10,
-                                  week_end: int = 53
+                                  week_end: int = 53,
+                                  add_age: bool = False
                                   ) -> pd.DataFrame:
         curr_year_mort = df[(df['Year'] >= 2020) &
                             (
                                     (df['Year'] == 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)
                             )]
-        curr_year_mort.drop('Age', axis=1, inplace=True)
-        curr_year_mort = curr_year_mort.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+        if not add_age:
+            curr_year_mort.drop('Age', axis=1, inplace=True)
+            curr_year_mort = curr_year_mort.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+        else:
+            curr_year_mort = curr_year_mort.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
         return curr_year_mort
 
     @staticmethod
-    def merge_weekly_dfs(curr_year: pd.DataFrame, prev_years: pd.DataFrame, param: str = 'year') -> pd.DataFrame:
-        merge_data_on = {
-            'year': ['Sex', 'Location'],
-            'week': ['Sex', 'Location', 'Week']
-        }
+    def merge_weekly_dfs(curr_year: pd.DataFrame, prev_years: pd.DataFrame, param: str = 'year', add_age: bool = False) -> pd.DataFrame:
+        if not add_age:
+            merge_data_on = {
+                'year': ['Sex', 'Location'],
+                'week': ['Sex', 'Location', 'Week']
+            }
+        else:
+            merge_data_on = {
+                'year': ['Age', 'Sex', 'Location'],
+                'week': ['Age', 'Sex', 'Location', 'Week']
+            }
 
         if param == 'year':
             curr_year.drop('Week', axis=1, inplace=True)
-            curr_year = curr_year.groupby(['Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
+            if not add_age:
+                curr_year = curr_year.groupby(['Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
+            else:
+                curr_year = curr_year.groupby(['Age', 'Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
 
         curr_year = curr_year.merge(prev_years,
                                     left_on=merge_data_on[param],
@@ -155,19 +182,23 @@ class CalcExcessMortality(SaveFile):
 
     def calc_excess_mortality(self,
                               df: pd.DataFrame,
-                              weekly: bool = False) -> pd.DataFrame:
+                              weekly: bool = False,
+                              add_age: bool = False) -> pd.DataFrame:
         time_params = {
             False: 'year',
             True: 'week'
         }
         time_param = time_params[weekly]
 
-        prev_years = self.build_prev_year_mort_base(df)
-        prev_years = self.add_std(prev_years, time_param)
+        prev_years = self.build_prev_year_mort_base(df, add_age=add_age)
+        prev_years = self.add_std(prev_years, time_param, add_age=add_age)
         prev_years = self.add_cmn_prev_year_attrs(prev_years)
 
-        curr_year = self.build_curr_year_mort_base(df=df)
-        merged: pd.DataFrame = self.merge_weekly_dfs(curr_year=curr_year, prev_years=prev_years,  param=time_param)
+        curr_year = self.build_curr_year_mort_base(df=df, add_age=add_age)
+        merged: pd.DataFrame = self.merge_weekly_dfs(curr_year=curr_year,
+                                                     prev_years=prev_years,
+                                                     param=time_param,
+                                                     add_age=add_age)
         merged: pd.DataFrame = self.add_merged_data_attrs(merged)
 
         return merged
