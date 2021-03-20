@@ -3,7 +3,6 @@ from typing import List
 import pandas as pd
 
 from code_base.excess_mortality.eurostat_bulk_base import GetBulkEurostatDataBase, clean_unneeded_symbols, SaveFile
-from code_base.excess_mortality.folder_constants import source_eu_population
 
 
 class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
@@ -34,6 +33,6 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
     def get_age_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
         filt_mask = self.eurostat_df['Sex'].isin(sex) & self.eurostat_df['Age'].isin(age)
         df = self.eurostat_df[filt_mask].copy()
-        df.groupby(['Sex', 'Age', 'Location'], as_index=False).sum('Population')
+        df.drop('Age', axis=1, inplace=True)
+        df = df.groupby(['Sex', 'Location'], as_index=False).sum('Population')
         return df
-
