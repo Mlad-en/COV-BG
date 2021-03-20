@@ -57,10 +57,10 @@ class SaveFile:
 
         if method == 'csv':
             df.to_csv(file_path, index=False, encoding='utf-8-sig')
+        if method == 'excel':
+            df.to_excel(file_path, index=False, encoding='utf-8-sig', float_format="%.1f")
         # TODO: Implement other save df methods
         if method == 'latex':
-            raise ValueError('Method NOT yet implemented')
-        if method == 'excel':
             raise ValueError('Method NOT yet implemented')
         if method == 'pickle':
             raise ValueError('Method NOT yet implemented')

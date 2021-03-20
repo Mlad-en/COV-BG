@@ -13,6 +13,7 @@ webdriver-manager = "*"
 requests = "*"
 bs4 = "*"
 lxml = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.8"
