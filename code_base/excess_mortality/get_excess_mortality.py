@@ -39,26 +39,6 @@ class GetExcessMortalityCountry(GetBulkEurostatDataBase):
 
         self.decode_demo_values()
 
-    def calc_std_pop_excess_mortality(self, pop_df):
-        exc_mort_std: pd.DataFrame = self.eurostat_df.merge(pop_df[['Sex', 'Location', 'Population']],
-                                                            left_on=['Sex', 'Location'],
-                                                            right_on=['Sex', 'Location']).copy()
-
-        exc_mort_std['Excess_mortality_per_10^5'] = exc_mort_std.apply(
-            lambda x: x['Excess_mortality_Mean'] / x['2020 '] * 10 ** 5, axis=1).round(1)
-
-        exc_mort_std['Excess_mortality_per_10^5_fluc'] = exc_mort_std.apply(
-            lambda x: ((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['2020 '] * 10 ** 5) - x[
-                'Excess_mortality_per_10^5'], axis=1).round(1)
-
-        exc_mort_std['Excess_mortality_per_10^5_±'] = \
-            exc_mort_std['Excess_mortality_per_10^5'].map(str) \
-            + '(±' + \
-            exc_mort_std['Excess_mortality_per_10^5_fluc'].map(str) \
-            + ')'
-
-        return exc_mort_std
-
 
 class GetExcessMortalityRegion(GetBulkEurostatDataBase):
 

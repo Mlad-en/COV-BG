@@ -172,14 +172,38 @@ class CalcExcessMortality(SaveFile):
 
         return merged
 
+    @staticmethod
+    def calc_std_pop_excess_mortality(mortality_df, pop_df):
+        exc_mort_std: pd.DataFrame = mortality_df.merge(pop_df[['Sex', 'Location', 'Population']],
+                                                        left_on=['Sex', 'Location'],
+                                                        right_on=['Sex', 'Location']).copy()
+
+        exc_mort_std['Excess_mortality_per_10^5'] = exc_mort_std.apply(
+            lambda x: x['Excess_mortality_Mean'] / x['Population'] * 10 ** 5, axis=1).round(1)
+
+        exc_mort_std['Excess_mortality_per_10^5_fluc'] = exc_mort_std.apply(
+            lambda x: abs(((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['Population'] * 10 ** 5) - x[
+                'Excess_mortality_per_10^5']), axis=1).round(1)
+
+        exc_mort_std['Excess_mortality_per_10^5_±'] = \
+            exc_mort_std['Excess_mortality_per_10^5'].map(str) \
+            + '(±' + \
+            exc_mort_std['Excess_mortality_per_10^5_fluc'].map(str) \
+            + ')'
+
+        return exc_mort_std
+
     def excess_mortality_to_file(self,
                                  mortality_df: pd.DataFrame,
+                                 pop_df: pd.DataFrame,
                                  sex: List = ['Total'],
-                                 age: List = ['Total'],) -> Dict:
+                                 age: List = ['Total'],
+                                 ) -> Dict:
         # TODO: Add filtering for Countries that do not have data for all weeks required for analysis.
         # TODO: Add filtering for week start and end ranges.
         """
         :param mortality_df: Add reference to the get_mortality_df attribute.
+        :param pop_df:
         :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
         :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
         :return: Function returns a dictionary of the file location of the per week deaths (key: weekly_deaths)
@@ -200,14 +224,17 @@ class CalcExcessMortality(SaveFile):
 
         total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         total_deaths = self.calc_excess_mortality(df)
-        total_file = self.save_df_to_file(total_deaths, self.file_loc, total_file_name)
+        total_deaths_std = self.calc_std_pop_excess_mortality(total_deaths, pop_df)
+        total_deaths_file = self.save_df_to_file(total_deaths_std, self.file_loc, total_file_name)
 
         weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         weekly_deaths = self.calc_excess_mortality(df, weekly=True)
-        weekly_file = self.save_df_to_file(weekly_deaths, self.file_loc, weekly_file_name)
+        weekly_deaths_std = self.calc_std_pop_excess_mortality(weekly_deaths, pop_df)
+        weekly_deaths_file = self.save_df_to_file(weekly_deaths_std, self.file_loc, weekly_file_name)
 
         file_locs = {
-            'total_deaths': total_file,
-            'weekly_deaths': weekly_file
+            'total': total_deaths_file,
+            'weekly': weekly_deaths_file
         }
+
         return file_locs

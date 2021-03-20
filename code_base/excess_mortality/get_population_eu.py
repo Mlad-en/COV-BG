@@ -36,3 +36,4 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         df = self.eurostat_df[filt_mask].copy()
         df.groupby(['Sex', 'Age', 'Location'], as_index=False).sum('Population')
         return df
+

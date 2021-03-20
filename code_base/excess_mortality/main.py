@@ -1,18 +1,30 @@
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
+from code_base.excess_mortality.get_population_eu import GetEUPopulation
 
 if __name__ == '__main__':
-    c = CalcExcessMortality(
-        cntry='BG'
-    )
-    mortality = c.get_mortality_df
-    c.excess_mortality_to_file(mortality)
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)'])
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(30-34)', '(35-39)'])
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(65-69)'])
+    # bg_mortaity = CalcExcessMortality(
+    #     cntry='BG'
+    # )
+    # mortality = bg_mortaity.get_mortality_df
+    # bg_mortaity.excess_mortality_to_file(mortality)
+    # bg_mortaity.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)'])
+    # bg_mortaity.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(30-34)', '(35-39)'])
+    # bg_mortaity.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(65-69)'])
 
-    c = CalcExcessMortality()
-    mortality = c.get_mortality_df
-    c.excess_mortality_to_file(mortality)
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)'])
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(30-34)', '(35-39)'])
-    c.excess_mortality_to_file(mortality, sex=['Female', 'Male'], age=['(65-69)'])
+    sex = ['Female', 'Male', 'Total']
+    age_30_39 = ['(30-34)', '(35-39)']
+    age_40_64 = ['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)']
+    age_65_39 = ['(65-69)']
+    age_groups = [age_30_39, age_40_64, age_65_39]
+
+    eu_mortality = CalcExcessMortality()
+    mortality = eu_mortality.get_mortality_df
+
+    pop = GetEUPopulation()
+    pop.clean_up_df()
+    pop_dt = pop.get_age_sex_cntry_pop()
+    eu_mortality.excess_mortality_to_file(mortality, pop_dt)
+
+    for age in age_groups:
+        pop_dt = pop.get_age_sex_cntry_pop(sex=sex, age=age)
+        eu_mortality.excess_mortality_to_file(mortality, pop_dt, sex=sex, age=age)
