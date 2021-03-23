@@ -38,7 +38,6 @@ EU_COUNTRIES_ISO_2_DECODES = {
     'UK': 'United Kingdom',
 }
 
-
 EU_DECODE_NUTS3_REGIONS = {
     'BE': 'Belgium',
     'BE1': 'Région de Bruxelles-Capitale/Brussels Hoofdstedelijk Gewest',
@@ -1449,4 +1448,44 @@ EU_DECODE_NUTS3_REGIONS = {
     'RS227': 'Podunavska oblast',
     'RS228': 'Pcinjska oblast',
     'RS229': 'Toplicka oblast',
+}
+
+UN_LOC_VARS = {
+    'Andorra',
+    'Albania',
+    'Armenia',
+    'Austria',
+    'Belgium',
+    'Bulgaria',
+    'Switzerland',
+    'Cyprus',
+    'Czechia',
+    'Germany',
+    'Denmark',
+    'Estonia',
+    'Greece',
+    'Spain',
+    'Finland',
+    'France',
+    'Georgia',
+    'Croatia',
+    'Hungary',
+    'Iceland',
+    'Italy',
+    'Liechtenstein',
+    'Lithuania',
+    'Luxembourg',
+    'Latvia',
+    'Montenegro',
+    'Malta',
+    'Netherlands',
+    'Norway',
+    'Poland',
+    'Portugal',
+    'Romania',
+    'Serbia',
+    'Sweden',
+    'Slovenia',
+    'Slovakia',
+    'United Kingdom',
 }

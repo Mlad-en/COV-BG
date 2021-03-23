@@ -1,9 +1,15 @@
+from os import path
 from typing import List
 
 import pandas as pd
 
-from code_base.excess_mortality.common_query_params import sex, ages_0_89
-from code_base.excess_mortality.eurostat_bulk_base import GetBulkEurostatDataBase, clean_unneeded_symbols, SaveFile
+from code_base.excess_mortality.eurostat_bulk_base import (GetBulkEurostatDataBase,
+                                                           clean_unneeded_symbols,
+                                                           SaveFile,
+                                                           UN_LOC_VARS,
+                                                           UN_DECODE_AGE_GROUPS,
+                                                           UN_DECODE_SEX_GROUPS)
+from code_base.excess_mortality.folder_constants import source_eu_population
 
 
 class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
@@ -25,7 +31,7 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         remove_missing_vals_mask = self.eurostat_df["Population"].str.contains(":") == False
         remove_missing_cntry_mask = self.eurostat_df["Location"].isna()
         self.eurostat_df = self.eurostat_df[remove_missing_vals_mask]
-        # self.eurostat_df = self.eurostat_df[~remove_missing_cntry_mask]
+        self.eurostat_df = self.eurostat_df[~remove_missing_cntry_mask]
 
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'p', '')
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'e', '')
@@ -39,9 +45,33 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         return df
 
 
-if __name__ == '__main__':
-    c = GetEUPopulation()
-    c.clean_up_df()
-    c.get_age_sex_cntry_pop(sex=sex, age=ages_0_89).to_csv(
-        r'C:\Users\mmladenov\Desktop\github_repos\COV-BG\prelim_analysis\Excess_mortality\pop.csv',
-        index=False)
+class GetPopUN(SaveFile):
+    def __init__(self):
+        self.file_name = 'UNDATA_Population by age, sex and urban-rural residence_2019.csv'
+        self.file_loc = path.join(source_eu_population, self.file_name)
+        self.pop_df = pd.read_csv(self.file_loc, encoding='utf-8-sig')
+
+    def clean_up_df(self):
+        filt_age_cntry_sex_area = (self.pop_df['Country or Area'].isin(UN_LOC_VARS)) \
+                                  & (self.pop_df['Age'].isin(UN_DECODE_AGE_GROUPS.keys())) \
+                                  & (self.pop_df['Sex'].isin(UN_DECODE_SEX_GROUPS.keys())) \
+                                  & (self.pop_df['Area'] == 'Total')
+        self.pop_df = self.pop_df[filt_age_cntry_sex_area]
+
+        drop_cols = ['Value Footnotes', 'Record Type', 'Reliability','Area', 'Year', 'Source Year']
+        self.pop_df.drop(columns=drop_cols, inplace=True)
+
+        cols = {'Country or Area': 'Location', 'Value': 'Population'}
+        self.pop_df.rename(columns=cols, inplace=True)
+
+        self.pop_df['Sex'] = self.pop_df.apply(lambda x: UN_DECODE_SEX_GROUPS[x['Sex']], axis=1)
+        self.pop_df['Age'] = self.pop_df.apply(lambda x: UN_DECODE_AGE_GROUPS[x['Age']], axis=1)
+
+        return self.pop_df
+
+    def get_age_sex_cntry_pop(self, sex: List, age: List) -> pd.DataFrame:
+        filt_mask = (self.pop_df['Sex'].isin(sex)) & (self.pop_df['Age'].isin(age))
+        df = self.pop_df[filt_mask].copy()
+        df.drop('Age', axis=1, inplace=True)
+        df = df.groupby(['Sex', 'Location'], as_index=False).sum('Population')
+        return df

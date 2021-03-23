@@ -25,9 +25,14 @@ class GetBulkEurostatDataBase:
         self.replace_location_name = COUNTRY_REPLACE[self.eurostat_data]
 
         if zipped:
-            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, compression='gzip', sep='\t', encoding='utf-8-sig', low_memory=False)
+            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url,
+                                                         compression='gzip',
+                                                         sep='\t',
+                                                         encoding='utf-8-sig',
+                                                         low_memory=False)
         else:
-            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url, encoding='utf-8-sig')
+            self.eurostat_df: pd.DataFrame = pd.read_csv(self.url,
+                                                         encoding='utf-8-sig')
 
     @property
     def url(self) -> str:
