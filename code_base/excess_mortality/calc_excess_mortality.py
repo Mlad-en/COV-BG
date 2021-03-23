@@ -180,6 +180,27 @@ class CalcExcessMortality(SaveFile):
         df['P_score ±'] = df['P_Score'].map(str) + '% (±' + df['P_score_fluctuation'].map(str) + '%)'
         return df
 
+    @staticmethod
+    def calc_std_pop_excess_mortality(mortality_df, pop_df):
+        exc_mort_std: pd.DataFrame = mortality_df.merge(pop_df[['Sex', 'Location', 'Population']],
+                                                        left_on=['Sex', 'Location'],
+                                                        right_on=['Sex', 'Location']).copy()
+
+        exc_mort_std['Excess_mortality_per_10^5'] = exc_mort_std.apply(
+            lambda x: x['Excess_mortality_Mean'] / x['Population'] * 10 ** 5, axis=1).round(1)
+
+        exc_mort_std['Excess_mortality_per_10^5_fluc'] = exc_mort_std.apply(
+            lambda x: abs(((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['Population'] * 10 ** 5) - x[
+                'Excess_mortality_per_10^5']), axis=1).round(1)
+
+        exc_mort_std['Excess_mortality_per_10^5_±'] = \
+            exc_mort_std['Excess_mortality_per_10^5'].map(str) \
+            + '(±' + \
+            exc_mort_std['Excess_mortality_per_10^5_fluc'].map(str) \
+            + ')'
+
+        return exc_mort_std
+
     def calc_excess_mortality(self,
                               df: pd.DataFrame,
                               weekly: bool = False,
@@ -203,26 +224,19 @@ class CalcExcessMortality(SaveFile):
 
         return merged
 
-    @staticmethod
-    def calc_std_pop_excess_mortality(mortality_df, pop_df):
-        exc_mort_std: pd.DataFrame = mortality_df.merge(pop_df[['Sex', 'Location', 'Population']],
-                                                        left_on=['Sex', 'Location'],
-                                                        right_on=['Sex', 'Location']).copy()
+    def clean_eu_data(self, df, exclude_cntrs: Optional[List] = ['']):
+        year = 2021 if self.add_current_year else 2020
+        week = self.current_year_weeks if self.add_current_year else 53
 
-        exc_mort_std['Excess_mortality_per_10^5'] = exc_mort_std.apply(
-            lambda x: x['Excess_mortality_Mean'] / x['Population'] * 10 ** 5, axis=1).round(1)
+        filt_mask = ((df['Year'] == year)
+                     & (df['Week'] == week)
+                     & (df['Mortality'].notnull())
+                     & ~(df['Location'].isin(exclude_cntrs)))
+        countries_w_uptodate_data = df[filt_mask].loc[:, 'Location'].drop_duplicates().to_list()
 
-        exc_mort_std['Excess_mortality_per_10^5_fluc'] = exc_mort_std.apply(
-            lambda x: abs(((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['Population'] * 10 ** 5) - x[
-                'Excess_mortality_per_10^5']), axis=1).round(1)
+        df = df[df['Location'].isin(countries_w_uptodate_data)]
 
-        exc_mort_std['Excess_mortality_per_10^5_±'] = \
-            exc_mort_std['Excess_mortality_per_10^5'].map(str) \
-            + '(±' + \
-            exc_mort_std['Excess_mortality_per_10^5_fluc'].map(str) \
-            + ')'
-
-        return exc_mort_std
+        return df
 
     def excess_mortality_to_file(self,
                                  mortality_df: pd.DataFrame,
@@ -235,7 +249,7 @@ class CalcExcessMortality(SaveFile):
         :param pop_df:
         :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
         :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
-        :param exclude_cntrs:
+        :param exclude_cntrs: a List of countries that require an exclusion from the Dataset.
         :return: Function returns a dictionary of the file location of the per week deaths (key: weekly_deaths)
         and total deaths (key: total_deaths)
         """
@@ -243,27 +257,26 @@ class CalcExcessMortality(SaveFile):
         df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
 
         if not self.cntry:
-            year = 2021 if self.add_current_year else 2020
-            week = self.current_year_weeks if self.add_current_year else 53
-            filt_mask = ((df['Year'] == year)
-                         & (df['Week'] == week)
-                         & (df['Mortality'].notnull())
-                         & ~(df['Location'].isin(exclude_cntrs)))
-            countries_w_uptodate_data = df[filt_mask].loc[:, 'Location'].drop_duplicates().to_list()
-            df = df[df['Location'].isin(countries_w_uptodate_data)]
+            df = self.clean_eu_data(df, exclude_cntrs=exclude_cntrs)
 
         country = f'{self.cntry}_' if self.cntry else 'EUROPE_'
         age_f = self.get_age_ranges(age)
 
         total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         total_deaths = self.calc_excess_mortality(df)
-        total_deaths_std = self.calc_std_pop_excess_mortality(total_deaths, pop_df)
-        total_deaths_file = self.save_df_to_file(total_deaths_std, self.file_loc, total_file_name, method='excel')
+        if not self.cntry:
+            total_deaths_std = self.calc_std_pop_excess_mortality(total_deaths, pop_df)
+            total_deaths_file = self.save_df_to_file(total_deaths_std, self.file_loc, total_file_name, method='excel')
+        else:
+            total_deaths_file = self.save_df_to_file(total_deaths, self.file_loc, total_file_name, method='excel')
 
         weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         weekly_deaths = self.calc_excess_mortality(df, weekly=True)
-        weekly_deaths_std = self.calc_std_pop_excess_mortality(weekly_deaths, pop_df)
-        weekly_deaths_file = self.save_df_to_file(weekly_deaths_std, self.file_loc, weekly_file_name, method='excel')
+        if not self.cntry:
+            weekly_deaths_std = self.calc_std_pop_excess_mortality(weekly_deaths, pop_df)
+            weekly_deaths_file = self.save_df_to_file(weekly_deaths_std, self.file_loc, weekly_file_name, method='excel')
+        else:
+            weekly_deaths_file = self.save_df_to_file(weekly_deaths, self.file_loc, weekly_file_name, method='excel')
 
         file_locs = {
             'total': total_deaths_file,

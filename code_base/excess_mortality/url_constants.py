@@ -2,6 +2,12 @@ EUROSTAT_DATA = {
     'main': 'https://ec.europa.eu',
     'pages': {
         'bulk_data': '/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?dir=data',
+        'excess_mortality_by_sex_age_country':
+            '/eurostat/databrowser/view/demo_r_mwk_05/default/table?lang=en',
+        'excess_mortality_by_sex_age_nuts3':
+            '',
+        'europe_population_by_age_and_sex':
+            '/eurostat/databrowser/view/demo_pjangroup/default/table?lang=en'
     },
     'files': {
         'excess_mortality_by_sex_age_country':

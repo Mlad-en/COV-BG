@@ -2,6 +2,7 @@ from typing import List
 
 import pandas as pd
 
+from code_base.excess_mortality.common_query_params import sex
 from code_base.excess_mortality.eurostat_bulk_base import GetBulkEurostatDataBase, clean_unneeded_symbols, SaveFile
 
 
@@ -24,7 +25,7 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         remove_missing_vals_mask = self.eurostat_df["Population"].str.contains(":") == False
         remove_missing_cntry_mask = self.eurostat_df["Location"].isna()
         self.eurostat_df = self.eurostat_df[remove_missing_vals_mask]
-        self.eurostat_df = self.eurostat_df[~remove_missing_cntry_mask]
+        # self.eurostat_df = self.eurostat_df[~remove_missing_cntry_mask]
 
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'p', '')
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'e', '')

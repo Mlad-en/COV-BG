@@ -111,7 +111,6 @@ class ExcessMortalityMapper:
             file = f'{self.cntry}_excess_mortality_{from_range}_{to_range}'
         else:
             file = f'EU_excess_mortality_{from_range}_{to_range}'
-        source_excess_mortality_regions
         save_to_loc = source_excess_mortality_regions if self.cntry else source_excess_mortality_countries
         file_path = data.save_df(file_name=file, loc=save_to_loc)
 
