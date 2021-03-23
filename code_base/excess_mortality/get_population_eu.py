@@ -2,7 +2,7 @@ from typing import List
 
 import pandas as pd
 
-from code_base.excess_mortality.common_query_params import sex
+from code_base.excess_mortality.common_query_params import sex, ages_0_89
 from code_base.excess_mortality.eurostat_bulk_base import GetBulkEurostatDataBase, clean_unneeded_symbols, SaveFile
 
 
@@ -37,3 +37,11 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         df.drop('Age', axis=1, inplace=True)
         df = df.groupby(['Sex', 'Location'], as_index=False).sum('Population')
         return df
+
+
+if __name__ == '__main__':
+    c = GetEUPopulation()
+    c.clean_up_df()
+    c.get_age_sex_cntry_pop(sex=sex, age=ages_0_89).to_csv(
+        r'C:\Users\mmladenov\Desktop\github_repos\COV-BG\prelim_analysis\Excess_mortality\pop.csv',
+        index=False)
