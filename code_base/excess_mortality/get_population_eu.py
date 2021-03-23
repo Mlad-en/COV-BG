@@ -37,7 +37,7 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'e', '')
         self.eurostat_df['Population'] = self.eurostat_df['Population'].map(int)
 
-    def get_age_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
+    def get_agg_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
         filt_mask = self.eurostat_df['Sex'].isin(sex) & self.eurostat_df['Age'].isin(age)
         df = self.eurostat_df[filt_mask].copy()
         df.drop('Age', axis=1, inplace=True)
@@ -51,14 +51,14 @@ class GetPopUN(SaveFile):
         self.file_loc = path.join(source_eu_population, self.file_name)
         self.pop_df = pd.read_csv(self.file_loc, encoding='utf-8-sig')
 
-    def clean_up_df(self):
+    def clean_up_df(self) -> pd.DataFrame:
         filt_age_cntry_sex_area = (self.pop_df['Country or Area'].isin(UN_LOC_VARS)) \
                                   & (self.pop_df['Age'].isin(UN_DECODE_AGE_GROUPS.keys())) \
                                   & (self.pop_df['Sex'].isin(UN_DECODE_SEX_GROUPS.keys())) \
                                   & (self.pop_df['Area'] == 'Total')
         self.pop_df = self.pop_df[filt_age_cntry_sex_area]
 
-        drop_cols = ['Value Footnotes', 'Record Type', 'Reliability','Area', 'Year', 'Source Year']
+        drop_cols = ['Value Footnotes', 'Record Type', 'Reliability', 'Area', 'Year', 'Source Year']
         self.pop_df.drop(columns=drop_cols, inplace=True)
 
         cols = {'Country or Area': 'Location', 'Value': 'Population'}
@@ -69,9 +69,11 @@ class GetPopUN(SaveFile):
 
         return self.pop_df
 
-    def get_age_sex_cntry_pop(self, sex: List, age: List) -> pd.DataFrame:
+    def get_agg_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
         filt_mask = (self.pop_df['Sex'].isin(sex)) & (self.pop_df['Age'].isin(age))
         df = self.pop_df[filt_mask].copy()
+
         df.drop('Age', axis=1, inplace=True)
         df = df.groupby(['Sex', 'Location'], as_index=False).sum('Population')
+
         return df

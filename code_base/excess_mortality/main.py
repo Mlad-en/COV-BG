@@ -1,6 +1,6 @@
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
 from code_base.excess_mortality.get_population_eu import GetEUPopulation
-from code_base.excess_mortality.common_query_params import *
+from code_base.utils.common_query_params import *
 if __name__ == '__main__':
     # bg_mortaity = CalcExcessMortality(
     #     cntry='BG'
@@ -16,9 +16,9 @@ if __name__ == '__main__':
 
     pop = GetEUPopulation()
     pop.clean_up_df()
-    pop_dt = pop.get_age_sex_cntry_pop(sex=sex)
+    pop_dt = pop.get_agg_sex_cntry_pop(sex=sex)
     eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs, sex=sex)
 
     for age in age_groups_for_exc_mort:
-        pop_dt = pop.get_age_sex_cntry_pop(sex=sex, age=age)
+        pop_dt = pop.get_agg_sex_cntry_pop(sex=sex, age=age)
         eu_mortality.calc_excess_mortality(eu_mortality.clean_eu_data(mortality, exclude_cntrs), add_age=True)

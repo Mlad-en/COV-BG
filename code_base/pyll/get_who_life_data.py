@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from code_base.pyll.folder_constants import source_WHO_life_data
 from code_base.utils.save_file_utils import SaveFile
 from code_base.pyll.decode_loc_vars import EU_COUNTRIES_ISO_3_DECODES
 from code_base.pyll.decode_vars import *
@@ -9,7 +10,7 @@ from code_base.pyll.url_constants import WHO_DATA
 
 class GetWHOLifeData(SaveFile):
     def __init__(self):
-        pass
+        self.file_loc = source_WHO_life_data
 
     @staticmethod
     def get_life_tables_eu(location: str = 'EUR', year: str = '2019') -> pd.DataFrame:
