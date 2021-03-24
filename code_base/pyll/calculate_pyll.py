@@ -5,13 +5,13 @@ import pandas as pd
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
 from code_base.pyll.folder_constants import output_pyll_eu
 from code_base.pyll.get_who_life_data import GetWHOLifeData
-from code_base.utils.common_query_params import exclude_cntrs, sex,ages_0_89, age_15_64
-from code_base.excess_mortality.get_population_eu import GetPopUN
+from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84
+from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
 from code_base.utils.save_file_utils import SaveFile
 
 
-class CalcExcessMortPyll(SaveFile):
+class CalcExcessMortYLL(SaveFile):
     def __init__(self):
         self.file_location = output_pyll_eu
 
@@ -42,10 +42,21 @@ class CalcExcessMortPyll(SaveFile):
         return pd.DataFrame(working_years)
 
     @staticmethod
-    def get_un_pop_data(age_groups: List, sex_groups: List) -> pd.DataFrame:
-        pop_eu = GetPopUN()
-        pop_eu.clean_up_df()
-        return pop_eu.get_agg_sex_cntry_pop(age=age_groups, sex=sex_groups)
+    def get_pop_data(age_groups: List, sex_groups: List) -> pd.DataFrame:
+        upper_age_bound = [age_groups.pop(age_groups.index('(85-89)'))] if '(85-89)' in age_groups else None
+
+        eu = GetEUPopulation()
+        eu.clean_up_df()
+        results = eu.get_agg_sex_cntry_pop(age=age_groups, sex=sex_groups)
+
+        if upper_age_bound:
+            un = GetPopUN()
+            un.clean_up_df()
+            un_lf = un.get_agg_sex_cntry_pop(age=upper_age_bound, sex=sex_groups)
+            results = pd.concat([results, un_lf])
+            results = results.groupby(['Sex', 'Location'], as_index=False).sum('Population')
+
+        return results
 
     @staticmethod
     def merge_frames(df1, df2, merge_on):
@@ -101,16 +112,16 @@ class CalcExcessMortPyll(SaveFile):
 
         return df
 
-    def calculate_yll_all_ages(self, ages: List = ages_0_89, sexes: List = sex, mode: str = 'PYLL'):
+    def calculate_yll_all_ages(self, ages: Optional[List] = None, sexes: List = sex, mode: str = 'PYLL'):
 
         if mode == 'PYLL':
+            ages = ages_0_89 if not ages else ages
             merge_on_lf_exc_mort = ['Age', 'Sex', 'Location']
-        elif mode == 'YPPLL':
+        elif mode == 'WYLL':
             merge_on_lf_exc_mort = ['Age']
+            ages = age_15_64 if not ages else ages
         else:
             raise ValueError('Invalid Mode Argument')
-
-        merge_on_pop = ['Sex', 'Location']
 
         yll_ages = self.get_life_exp_eu if mode == 'PYLL' else self.gen_working_years
 
@@ -122,8 +133,9 @@ class CalcExcessMortPyll(SaveFile):
         pyll_dt = self.agg_exc_mort_yll(pyll_dt, mode)
         pyll_dt = self.add_avg_yll(pyll_dt, mode)
 
+        merge_on_pop = ['Sex', 'Location']
         pyll_dt = self.merge_frames(df1=pyll_dt,
-                                    df2=self.get_un_pop_data(age_groups=ages, sex_groups=sexes),
+                                    df2=self.get_pop_data(age_groups=ages, sex_groups=sexes),
                                     merge_on=merge_on_pop)
 
         pyll_dt = self.add_std_mean_yll(pyll_dt, mode)
