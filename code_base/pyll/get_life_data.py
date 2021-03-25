@@ -51,6 +51,10 @@ class FullLifeExpectancy(SaveFile):
     LIFE_EXPECTANCY_DATA_PACKAGED bindings.
     """
     def __init__(self, country: str):
+        self.countries = LIST_LIFE_EXP_DT_COUNTRIES
+        if country not in self.countries:
+            raise TypeError(f'Incorrect country entered. Only acceptable options are: {", ".join(self.countries)}.')
+
         self.file_loc = source_le_countries_data
         self.countries: Dict = LIFE_EXPECTANCY_DATA_PACKAGED
         self.country: str = country

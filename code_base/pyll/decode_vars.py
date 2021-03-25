@@ -73,3 +73,5 @@ LIFE_EXPECTANCY_DATA_PACKAGED = {
         LIFE_EXPECTANCY_DATA['Czech Republic-WOMEN'],
                 ]
 }
+
+LIST_LIFE_EXP_DT_COUNTRIES = [country for country in LIFE_EXPECTANCY_DATA_PACKAGED.keys()]

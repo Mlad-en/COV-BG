@@ -18,3 +18,14 @@ EUROSTAT_DATA = {
             '/eurostat/api/dissemination/sdmx/2.1/data/demo_pjangroup/?&format=CSV'
     },
 }
+
+# Czechia Covid-19 stats website
+CZ_COV_URL = {
+    'main': 'https://onemocneni-aktualne.mzcr.cz',
+    'pages': {
+        'api_list': '/api/v2/covid-19'
+    },
+    'files': {
+        'mortality_by_age_gender': '/api/v2/covid-19/umrti.csv'
+    }
+}
