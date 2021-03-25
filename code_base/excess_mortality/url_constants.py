@@ -5,7 +5,7 @@ EUROSTAT_DATA = {
         'excess_mortality_by_sex_age_country':
             '/eurostat/databrowser/view/demo_r_mwk_05/default/table?lang=en',
         'excess_mortality_by_sex_age_nuts3':
-            '',
+            '/eurostat/databrowser/view/demo_r_mweek3/default/table?lang=en',
         'europe_population_by_age_and_sex':
             '/eurostat/databrowser/view/demo_pjangroup/default/table?lang=en'
     },

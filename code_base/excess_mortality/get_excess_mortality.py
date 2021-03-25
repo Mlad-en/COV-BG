@@ -97,7 +97,7 @@ class ExcessMortalityMapper:
 
     def generate_data(self) -> str:
         """
-        Function creates a csv file of the mortality data for either country or region.
+        Function creates a csv file of the mortality data for either country_dt or region.
         :return: Function returns the path to the generated file.
         """
         data = self.get_data_type

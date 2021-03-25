@@ -4,7 +4,7 @@ import pandas as pd
 
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
 from code_base.pyll.folder_constants import output_pyll_eu
-from code_base.pyll.get_who_life_data import GetWHOLifeData
+from code_base.pyll.get_life_data import GetWHOLifeData
 from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84
 from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
