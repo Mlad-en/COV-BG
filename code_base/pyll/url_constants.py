@@ -38,3 +38,12 @@ CZ_CZSO_URL = {
             '/documents/10180/121739354/1300632002.xlsx/eda89506-30fa-46e1-b3db-eda58575ba78?version=1.1'
     }
 }
+
+# Todo: add info about page.
+FED_INFO_SYS = {
+    'main': 'https://www.gbe-bund.de',
+    'pages': {
+        'std_pop_eu':
+            '/gbe/!pkg_olap_tables.prc_set_orientation?p_uid=gast&p_aid=18067231&p_sprache=E&p_help=2&p_indnr=1000&p_ansnr=73926311&p_version=3&D.002=2&D.003=2&D.011=1'
+    }
+}

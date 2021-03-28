@@ -4,6 +4,8 @@ from code_base.utils.folder_constants import *
 source_life_data = path.join(source_data, 'Life Expectancies')
 source_WHO_life_data = path.join(source_life_data, 'WHO Life Tables')
 source_le_countries_data = path.join(source_life_data, 'Countries (BG, CZ)')
+source_pop_data = path.join(source_data, 'Population')
+source_std_eu_2013_pop_data = path.join(source_pop_data, 'Standard Population Europe 2013')
 
 # Output Data
 output_pyll = path.join(output_data, 'PYLL')

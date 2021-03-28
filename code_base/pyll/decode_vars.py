@@ -7,7 +7,8 @@ DECODE_WHO_GENDER_VARS = {
 }
 
 DECODE_WHO_AGE_RANGES = {
-    'AGE1-4': '(0-4)',
+    # Todo: Add explanation about age 0-4 and age 85+
+    'AGELT1': '(0-4)',
     'AGE5-9': '(5-9)',
     'AGE10-14': '(10-14)',
     'AGE15-19': '(15-19)',
@@ -28,7 +29,7 @@ DECODE_WHO_AGE_RANGES = {
 }
 
 
-# __countries life expencancy bindings used for the country_dt-level life expectancy function
+# countries life expencancy bindings used for the country_dt-level life expectancy function
 LIFE_EXPECTANCY_DATA = {
     'Bulgaria': {
         'partial': False,

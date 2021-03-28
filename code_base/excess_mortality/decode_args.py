@@ -88,3 +88,28 @@ UN_DECODE_SEX_GROUPS = {
     'Male': 'Male',
     'Female': 'Female',
 }
+
+
+std_eu_pop_2013_decode_age = {
+    # Todo: Add explanations for 0-4
+    'Under 1 year': '(0-4)',
+    '1 year to under 5 years': '(0-4)',
+    '5 to under 10 years': '(5-9)',
+    '10 to under 15 years': '(10-14)',
+    '15 to under 20 years': '(15-19)',
+    '20 to under 25 years': '(20-24)',
+    '25 to under 30 years': '(25-29)',
+    '30 to under 35 years': '(30-34)',
+    '35 to under 40 years': '(35-39)',
+    '40 to under 45 years': '(40-44)',
+    '45 to under 50 years': '(45-49)',
+    '50 to under 55 years': '(50-54)',
+    '55 to under 60 years': '(55-59)',
+    '60 to under 65 years': '(60-64)',
+    '65 to under 70 years': '(65-69)',
+    '70 to under 75 years': '(70-74)',
+    '75 to under 80 years': '(75-79)',
+    '80 to under 85 years': '(80-84)',
+    '85 to under 90 years': '(85-89)',
+    '90 years and older': '(90+)',
+}
