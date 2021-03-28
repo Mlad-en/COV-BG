@@ -40,8 +40,8 @@ class CalcExcessMortYLL(SaveFile):
         working_years = {
             'Age': ['(15-19)', '(20-24)', '(25-29)', '(30-34)', '(35-39)', '(40-44)', '(45-49)', '(50-54)', '(55-59)',
                     '(60-64)'],
-            'Mean_Age_Per_Group': [18, 22, 27, 32, 37, 42, 47, 52, 57, 62],
-            'Working_Years_Left_Mean': [47, 43, 38, 33, 28, 23, 18, 13, 8, 3]
+            'Mean_Age_Per_Group': [18, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5],
+            'Working_Years_Left_Mean': [47, 42.5, 37.5, 32.5, 27.5, 22.5, 17.5, 12.5, 7.5, 2.5]
         }
         return pd.DataFrame(working_years)
 

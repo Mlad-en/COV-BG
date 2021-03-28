@@ -25,4 +25,4 @@ age_over_90 = ['(90+)']
 
 age_groups_for_exc_mort = [age_total, age_30_39, age_40_64, age_65_69]
 
-exclude_cntrs = ['Serbia', 'Germany']
+exclude_cntrs = ['Serbia', 'Germany', 'Liechtenstein']

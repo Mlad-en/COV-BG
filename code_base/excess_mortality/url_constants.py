@@ -29,3 +29,12 @@ CZ_COV_URL = {
         'mortality_by_age_gender': '/api/v2/covid-19/umrti.csv'
     }
 }
+
+# National Statistics Institute Bulgaria
+NSI_DATA = {
+    'main': 'https://www.nsi.bg',
+    'pages': {
+        'bg_pop_by_age_sex_reg':
+            '/en/content/6708/population-districts-age-place-residence-and-sex'
+    }
+}
