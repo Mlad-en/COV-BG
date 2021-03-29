@@ -10,8 +10,6 @@ from code_base.excess_mortality.eurostat_bulk_base import (GetBulkEurostatDataBa
                                                            UN_DECODE_AGE_GROUPS,
                                                            UN_DECODE_SEX_GROUPS)
 from code_base.excess_mortality.folder_constants import source_eu_population
-from code_base.utils.common_query_params import ages_0_84, age_85_89, sex
-
 
 class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
     def __init__(self):
@@ -81,14 +79,9 @@ class GetPopUN(SaveFile):
 
 
 if __name__ == '__main__':
-
-    eu = GetEUPopulation()
+    from code_base.utils.common_query_params import ages_0_84, age_85_89, sex, age_over_90
+    eu = GetPopUN()
     eu.clean_up_df()
-    eu_lf = eu.get_agg_sex_cntry_pop(age=ages_0_84, sex=sex)
+    eu_lf = eu.get_agg_sex_cntry_pop(sex=['Male', 'Female', 'Total'], age=['(90+)'])
 
-    un = GetPopUN()
-    raw_df = un.clean_up_df()
-    un_lf = un.get_agg_sex_cntry_pop(age=age_85_89, sex=sex)
-
-    results = pd.concat([eu_lf, un_lf])
-    results = results.groupby(['Sex', 'Location'], as_index=False).sum('Population')
+    print(eu_lf)

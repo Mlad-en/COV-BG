@@ -265,12 +265,14 @@ class CalcExcessMortality(SaveFile):
         total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         total_deaths = self.calc_excess_mortality(df)
         total_deaths_std = self.calc_std_pop_excess_mortality(total_deaths, pop_df)
+        # total_deaths_std = total_deaths
         total_deaths_file = self.save_df_to_file(total_deaths_std, self.file_loc, total_file_name, method='excel')
 
         weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
         weekly_deaths = self.calc_excess_mortality(df, weekly=True)
         weekly_deaths_std = self.calc_std_pop_excess_mortality(weekly_deaths, pop_df)
-        weekly_deaths_file = self.save_df_to_file(weekly_deaths, self.file_loc, weekly_file_name, method='excel')
+        # weekly_deaths_std = weekly_deaths
+        weekly_deaths_file = self.save_df_to_file(weekly_deaths_std, self.file_loc, weekly_file_name, method='excel')
 
         file_locs = {
             'total': total_deaths_file,
