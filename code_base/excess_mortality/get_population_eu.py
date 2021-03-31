@@ -11,6 +11,7 @@ from code_base.excess_mortality.eurostat_bulk_base import (GetBulkEurostatDataBa
                                                            UN_DECODE_SEX_GROUPS)
 from code_base.excess_mortality.folder_constants import source_eu_population
 
+
 class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
     def __init__(self):
         self.eurostat_data = 'europe_population_by_age_and_sex'
@@ -28,9 +29,8 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
 
         self.eurostat_df.rename(columns={'2020 ': 'Population'}, inplace=True)
         remove_missing_vals_mask = self.eurostat_df["Population"].str.contains(":") == False
-        remove_missing_cntry_mask = self.eurostat_df["Location"].isna()
         self.eurostat_df = self.eurostat_df[remove_missing_vals_mask]
-        self.eurostat_df = self.eurostat_df[~remove_missing_cntry_mask]
+        self.eurostat_df.dropna(how='any', subset=['Location'], axis=0, inplace=True)
 
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'p', '')
         self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'e', '')
@@ -68,20 +68,14 @@ class GetPopUN(SaveFile):
 
         return self.pop_df
 
-    def get_agg_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
+    def get_agg_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total'], drop_age: bool = True) -> pd.DataFrame:
         filt_mask = (self.pop_df['Sex'].isin(sex)) & (self.pop_df['Age'].isin(age))
         df = self.pop_df[filt_mask].copy()
-
-        df.drop('Age', axis=1, inplace=True)
-        df = df.groupby(['Sex', 'Location'], as_index=False).sum('Population')
+        if drop_age:
+            df.drop('Age', axis=1, inplace=True)
+            grouping = ['Sex', 'Location']
+        else:
+            grouping = ['Age', 'Sex', 'Location']
+        df = df.groupby(grouping, as_index=False).sum('Population')
 
         return df
-
-
-if __name__ == '__main__':
-    from code_base.utils.common_query_params import ages_0_84, age_85_89, sex, age_over_90
-    eu = GetPopUN()
-    eu.clean_up_df()
-    eu_lf = eu.get_agg_sex_cntry_pop(sex=['Male', 'Female', 'Total'], age=['(90+)'])
-
-    print(eu_lf)

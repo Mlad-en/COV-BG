@@ -1,7 +1,9 @@
+from code_base.pyll.calc_full_pyll import MergeMortalityLifeExpectancy
 from code_base.pyll.calculate_pyll import CalcExcessMortYLL
-from code_base.utils.common_query_params import age_15_64
+from code_base.utils.common_query_params import age_15_64, ages_all
 
 if __name__ == '__main__':
+    # Calculate PYLL and ASYR without 90+ age group
     c = CalcExcessMortYLL()
     pyll = c.calculate_yll_all_ages()
     c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
@@ -11,3 +13,15 @@ if __name__ == '__main__':
 
     asyr = c.calculate_asyr()
     c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
+
+    # Calculate PYLL and ASYR with 90+ age group
+    c = CalcExcessMortYLL(coalesce_upper_age_groups=True)
+    pyll = c.calculate_yll_all_ages(ages=ages_all)
+    c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
+
+    asyr = c.calculate_asyr(ages=ages_all)
+    c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
+
+    # full_pyll_bg = MergeMortalityLifeExpectancy('Bulgaria')
+    # full_pyll_cz = MergeMortalityLifeExpectancy('Czechia')
+

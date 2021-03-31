@@ -1,5 +1,5 @@
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
-from code_base.excess_mortality.get_pop_bg import get_bg_pop
+from code_base.excess_mortality.get_pop_cntr import get_bg_pop
 from code_base.excess_mortality.get_population_eu import GetEUPopulation, GetPopUN
 from code_base.utils.common_query_params import *
 

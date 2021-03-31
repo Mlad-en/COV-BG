@@ -1,3 +1,4 @@
+from http.client import IncompleteRead
 from os import path
 from typing import List, Optional
 
@@ -5,18 +6,20 @@ import pandas as pd
 
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
 from code_base.excess_mortality.decode_args import std_eu_pop_2013_decode_age
+from code_base.excess_mortality.get_pop_cntr import get_itl_pop
 from code_base.pyll.url_constants import FED_INFO_SYS
 from code_base.pyll.folder_constants import output_pyll_eu, source_std_eu_2013_pop_data
 from code_base.pyll.get_life_data import GetWHOLifeData
-from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84
+from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84, ages_all
 from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
 from code_base.utils.save_file_utils import SaveFile
 
 
 class CalcExcessMortYLL(SaveFile):
-    def __init__(self):
+    def __init__(self, coalesce_upper_age_groups: bool = False):
         self.file_location = output_pyll_eu
+        self.coalesce_upper_age_groups = coalesce_upper_age_groups
 
     @property
     def get_excess_mortality(self) -> pd.DataFrame:
@@ -32,15 +35,22 @@ class CalcExcessMortYLL(SaveFile):
 
     @property
     def get_life_exp_eu(self) -> pd.DataFrame:
-        eu_lf = GetWHOLifeData()
-        return eu_lf.get_life_tables_eu()
+        # While loop used since there are intermittent issues with data collection from Eurostat with this particular dataset.
+        while True:
+            try:
+                eu_lf = GetWHOLifeData()
+                df = eu_lf.get_life_tables_eu(add_90_and_over=self.coalesce_upper_age_groups)
+                break
+            except IncompleteRead:
+                continue
+        return df
 
     @property
     def gen_working_years(self) -> pd.DataFrame:
         working_years = {
             'Age': ['(15-19)', '(20-24)', '(25-29)', '(30-34)', '(35-39)', '(40-44)', '(45-49)', '(50-54)', '(55-59)',
                     '(60-64)'],
-            'Mean_Age_Per_Group': [18, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5],
+            'Mean_Age_Per_Group': [17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, 57.5, 62.5],
             'Working_Years_Left_Mean': [47, 42.5, 37.5, 32.5, 27.5, 22.5, 17.5, 12.5, 7.5, 2.5]
         }
         return pd.DataFrame(working_years)
@@ -51,24 +61,39 @@ class CalcExcessMortYLL(SaveFile):
         if mode not in ('agg', 'full'):
             raise TypeError('Incorrect Mode argument selected. Choices are "agg" and "full"')
 
-        upper_age_bound = [age_groups.pop(age_groups.index('(85-89)'))] if '(85-89)' in age_groups else None
+        upper_age_bound = [age_group for age_group in age_groups if age_group in ('(85-89)', '(90+)')]
+        age_groups = [age_group for age_group in age_groups if age_group not in ('(85-89)', '(90+)')]
 
-        eu = GetEUPopulation()
-        eu.clean_up_df()
+        while True:
+            try:
+                eu = GetEUPopulation()
+                eu.clean_up_df()
+                break
+            except IncompleteRead:
+                continue
 
         if mode == 'agg':
             results = eu.get_agg_sex_cntry_pop(age=age_groups, sex=sex_groups)
             group_vals = ['Sex', 'Location']
+            drop_age = True
 
         if mode == 'full':
             results = eu.eurostat_df
             group_vals = ['Sex', 'Age', 'Location']
+            drop_age = False
 
+        # Supplement data for the 85-89 and 90+ age groups. Eurostat data only goes up to 85+. To account for this
+        # use data form the UN Data Services for these ranges. For all EU countries age ranges are 85-89, 90-94, 95-99, 100+.
+        # This requires a translation from 90-94, 95-99, 100+ --to--> 90+.
+        # Furthermore, the UN data set is missing information about the UK and Italy. For Italy, supplement data from demo.istat.it
         if upper_age_bound:
             un = GetPopUN()
             un.clean_up_df()
-            un_lf = un.get_agg_sex_cntry_pop(age=upper_age_bound, sex=sex_groups)
+            un_lf = un.get_agg_sex_cntry_pop(age=upper_age_bound, sex=sex_groups, drop_age=drop_age)
             results = pd.concat([results, un_lf])
+            results = results.groupby(group_vals, as_index=False).sum('Population')
+            it_pop = get_itl_pop(age_range=upper_age_bound)
+            results = pd.concat([results, it_pop])
             results = results.groupby(group_vals, as_index=False).sum('Population')
 
         return results
@@ -76,11 +101,6 @@ class CalcExcessMortYLL(SaveFile):
     @staticmethod
     def merge_frames(df1, df2, merge_on):
         return df1.merge(df2, on=merge_on)
-
-    @staticmethod
-    def gen_file_name(age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL'):
-        age = age if len(age) == 1 else f'{age[0]}-{age[-1]}'
-        return f'EU_{mode}_{age}_{sex}'
 
     @staticmethod
     def agg_exc_mort_yll(df, mode: str = 'PYLL'):
@@ -192,10 +212,19 @@ class CalcExcessMortYLL(SaveFile):
         yll_dt['PYLL_Rate'] = yll_dt.apply(lambda x: (x['PYLL_mean'] / x['Population']) * 10 ** 5, axis=1).round(2)
         yll_dt['PYLL_Rate_fluc'] = yll_dt.apply(lambda x: (x['PYLL_fluc'] / x['Population']) * 10 ** 5, axis=1).round(2)
 
-        yll_dt['Pop_per_100000'] = yll_dt.apply(lambda x: (x['Standard population of Europe 2013 Info'] / 99_000), axis=1).round(3)
+        # If calculating only under 90+ years, then since the weight of the group is 1000, it should be 100,000 - 1000
+        division_pop = 99_000 if not self.coalesce_upper_age_groups else 100_000
+
+        yll_dt['Pop_per_100000'] = yll_dt.apply(lambda x:
+                                                (x['Standard population of Europe 2013 Info'] / division_pop),
+                                                axis=1).round(3)
         yll_dt['ASYR'] = yll_dt.apply(lambda x: (x['PYLL_Rate'] * x['Pop_per_100000']), axis=1).round(3)
         yll_dt['ASYR_FLUC'] = yll_dt.apply(lambda x: (x['PYLL_Rate_fluc'] * x['Pop_per_100000']), axis=1).round(3)
 
         agg_params = {'ASYR': 'sum',
                       'ASYR_FLUC': 'sum', }
         return yll_dt.groupby(['Location', 'Sex'], as_index=False).agg(agg_params)
+
+    def gen_file_name(self, age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL'):
+        age = age if len(age) == 1 else 'All_age_groups' if self.coalesce_upper_age_groups else f'{age[0]}-{age[-1]}'
+        return f'EU_{mode}_{age}_{sex}'
