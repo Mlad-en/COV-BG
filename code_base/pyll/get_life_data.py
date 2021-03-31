@@ -49,7 +49,7 @@ class GetWHOLifeData(SaveFile):
             temp_df = df[df['Age'] == '(85-89)']
             temp_df['Age'].values[:] = temp_df['Age'].str.replace('(85-89)', '(90+)', regex=False)
             if static_over_90:
-                temp_df['Life_Expectancy'] = 4
+                temp_df['Life_Expectancy'].values[:] = 4
             df = pd.concat([df, temp_df])
 
         return df

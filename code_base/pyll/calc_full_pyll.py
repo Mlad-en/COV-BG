@@ -10,7 +10,6 @@ from code_base.pyll.get_life_data import FullLifeExpectancy
 from code_base.utils.save_file_utils import SaveFile
 
 
-# TODO: FIX Class
 class MergeMortalityLifeExpectancy(SaveFile):
     # Class only applicable for Bulgaria and Czechia currently.
     def __init__(self, country):
@@ -58,12 +57,12 @@ class MergeMortalityLifeExpectancy(SaveFile):
         file_path = self.save_df_to_file(df=cov_mort_lf, file_name=filename, location=directory)
         return file_path
 
-    def calc_pyll_cz(self,
-                     start_date: Union[List, Tuple] = (2020, 3, 1),
-                     end_date: Union[List, Tuple] = (2020, 12, 31),
-                     start_age: int = 0,
-                     end_age: int = 150,
-                     sheet_name: Union[str, int] = 0) -> str:
+    def calc_full_pyll(self,
+                       start_date: Union[List, Tuple] = (2020, 3, 1),
+                       end_date: Union[List, Tuple] = (2020, 12, 31),
+                       start_age: int = 0,
+                       end_age: int = 150,
+                       sheet_name: Union[str, int] = 0) -> str:
 
         file = self.__get_cov_mort_and_lf_expectancy(start_date, end_date, start_age, end_age, sheet_name)
         df = pd.read_csv(file)
@@ -79,3 +78,5 @@ class MergeMortalityLifeExpectancy(SaveFile):
 
         file_path = self.save_df_to_file(df=cntr_pyll, location=directory, file_name=filename)
         return file_path
+
+
