@@ -17,9 +17,11 @@ from code_base.utils.save_file_utils import SaveFile
 
 
 class CalcExcessMortYLL(SaveFile):
-    def __init__(self, coalesce_upper_age_groups: bool = False):
+
+    def __init__(self, over_90_included: bool = False, static_lf_over_90: bool = False):
         self.file_location = output_pyll_eu
-        self.coalesce_upper_age_groups = coalesce_upper_age_groups
+        self.over_90_included = over_90_included
+        self.static_lf_over_90 = static_lf_over_90
 
     @property
     def get_excess_mortality(self) -> pd.DataFrame:
@@ -39,7 +41,8 @@ class CalcExcessMortYLL(SaveFile):
         while True:
             try:
                 eu_lf = GetWHOLifeData()
-                df = eu_lf.get_life_tables_eu(add_90_and_over=self.coalesce_upper_age_groups)
+                df = eu_lf.get_life_tables_eu(add_90_and_over=self.over_90_included,
+                                              static_over_90=self.static_lf_over_90)
                 break
             except IncompleteRead:
                 continue
@@ -213,7 +216,7 @@ class CalcExcessMortYLL(SaveFile):
         yll_dt['PYLL_Rate_fluc'] = yll_dt.apply(lambda x: (x['PYLL_fluc'] / x['Population']) * 10 ** 5, axis=1).round(2)
 
         # If calculating only under 90+ years, then since the weight of the group is 1000, it should be 100,000 - 1000
-        division_pop = 99_000 if not self.coalesce_upper_age_groups else 100_000
+        division_pop = 99_000 if not self.over_90_included else 100_000
 
         yll_dt['Pop_per_100000'] = yll_dt.apply(lambda x:
                                                 (x['Standard population of Europe 2013 Info'] / division_pop),
@@ -225,6 +228,6 @@ class CalcExcessMortYLL(SaveFile):
                       'ASYR_FLUC': 'sum', }
         return yll_dt.groupby(['Location', 'Sex'], as_index=False).agg(agg_params)
 
-    def gen_file_name(self, age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL'):
-        age = age if len(age) == 1 else 'All_age_groups' if self.coalesce_upper_age_groups else f'{age[0]}-{age[-1]}'
-        return f'EU_{mode}_{age}_{sex}'
+    def gen_file_name(self, age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL', more_info: str = ''):
+        age = age if len(age) == 1 else 'All_age_groups' if self.over_90_included else f'{age[0]}-{age[-1]}'
+        return f'EU_{mode}_{age}_{sex}{more_info}'

@@ -17,7 +17,10 @@ class GetWHOLifeData(SaveFile):
         self.file_loc = source_WHO_life_data
 
     @staticmethod
-    def get_life_tables_eu(location: str = 'EUR', year: str = '2019', add_90_and_over: bool = False) -> pd.DataFrame:
+    def get_life_tables_eu(location: str = 'EUR',
+                           year: str = '2019',
+                           add_90_and_over: bool = False,
+                           static_over_90: bool = False) -> pd.DataFrame:
 
         life_tables = WHO_DATA['api']['life_tables_europe']
         life_tables = life_tables.replace('###REGION###', location).replace('###YEAR###', year)
@@ -45,6 +48,8 @@ class GetWHOLifeData(SaveFile):
         if add_90_and_over:
             temp_df = df[df['Age'] == '(85-89)']
             temp_df['Age'].values[:] = temp_df['Age'].str.replace('(85-89)', '(90+)', regex=False)
+            if static_over_90:
+                temp_df['Life_Expectancy'] = 4
             df = pd.concat([df, temp_df])
 
         return df
