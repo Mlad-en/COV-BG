@@ -11,6 +11,12 @@ if __name__ == '__main__':
     )
     pop_bg = get_bg_pop(sex=sex)
     mortality = bg_mortality.get_mortality_df
+    # Generate by age excess mortality.
+    bg_mortality.save_df_to_file(bg_mortality.calc_excess_mortality(mortality, add_age=True),
+                                 bg_mortality.file_loc,
+                                 'bg_total_excess_mortality_by_loc_sex_age',
+                                 method='excel')
+    # Generate agg excess mortality.
     bg_mortality.excess_mortality_to_file(mortality, pop_bg, sex=sex)
 
     for age in age_groups_for_exc_mort:
