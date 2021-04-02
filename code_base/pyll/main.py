@@ -28,9 +28,12 @@ if __name__ == '__main__':
 
     # Calculate Full Covid-19 Mortality PYLL - Czechia and Bulgaria.
     cz = MergeMortalityLifeExpectancy('Czechia')
-    cz.calc_full_pyll()
+    cz.calc_full_yll()
     bg = MergeMortalityLifeExpectancy('Bulgaria')
-    bg.calc_full_pyll(sheet_name='combined_without_unk')
+    bg.calc_full_yll(sheet_name='combined_without_unk')
     # Generate datasets for the 40-64 age groups for Czechia and Bulgaria.
-    cz.calc_full_pyll(start_age=40, end_age=64)
-    bg.calc_full_pyll(start_age=40, end_age=64, sheet_name='combined_without_unk')
+    cz.calc_full_yll(start_age=40, end_age=64)
+    bg.calc_full_yll(start_age=40, end_age=64, sheet_name='combined_without_unk')
+    # Calculate WYLL for Bulgaria and Czechia, assuming a cut-off age of 65.
+    bg.calc_full_yll(sheet_name='combined_without_unk', mode='WYLL')
+    cz.calc_full_yll(mode='WYLL')
