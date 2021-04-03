@@ -47,6 +47,14 @@ class SaveFile:
 
     @staticmethod
     def save_df_to_file(df: pd.DataFrame, location, file_name: str, method: str = 'csv') -> str:
+        """
+
+        :param df: DataFrame object that needs to be saved.
+        :param location: The location where the DataFrame needs to be saved.
+        :param file_name: The file name of the saved file.
+        :param method: The file type - by default it's 'csv'. Others are excel, pickle and latex.
+        :return: Returns the absolute path to the saved file.
+        """
 
         file_type = FILE_EXT_TYPE.get(method)
         if not file_type:

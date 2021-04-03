@@ -24,3 +24,15 @@ EUROSTAT_POPULATION = {
         'population': '/eurostat/api/dissemination/sdmx/2.1/data/tps00001/A.JAN.BG?format=CSV&TIME_PERIOD=2020'
     }
 }
+
+
+# Bulgarian Ministry of Health
+BG_MH_URL = {
+    'main': 'https://www.mh.government.bg',
+    'pages': {
+        'news': {
+            'landing_page': '/novini/aktualno/',
+            'page_params': {'start_date': 'start_date', 'end_date': 'end_date', 'category': 'category'}
+        },
+    }
+}

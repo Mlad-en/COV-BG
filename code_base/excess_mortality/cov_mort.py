@@ -22,7 +22,7 @@ class GetFullCovidMortality(SaveFile):
         self.location = self.locs[self.country]
 
     def __bg_mortality(self):
-        # Mortality for Bulgaria was partially scrapped and partially collected manually due to incosistent entries
+        # Mortality for Bulgaria was partially scrapped and partially collected manually due to inconsistent entries
         # at the beginning of the pandemic. For these reasons, calling the scraping function directly
         # is time-intensive and laborious. It would also be incomplete, since it cannot read data earlier on consistently.
         # Hence the processed file is called directly, instead of calling for fresh data.
