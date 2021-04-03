@@ -114,7 +114,7 @@ class GetBGMort(SaveFile):
             }
             df = df.append(data, ignore_index=True)
 
-        file_name = f'bg_mh_raw_article_text_from_{period_dict["start_date"]}_to_{period_dict["end_date"]}.csv'
+        file_name = f'bg_mh_raw_article_text_from_{period_dict["start_date"]}_to_{period_dict["end_date"]}'
         file_location = self.save_df_to_file(df=df, location=self.source_loc,file_name=file_name, method='csv')
 
         return file_location
@@ -205,7 +205,7 @@ class GetBGMort(SaveFile):
             except (TypeError, IndexError):
                 continue
 
-        file_name = f'bg_mh_per_person_mortality_{dates["start_date"]}_{dates["end_date"]}.csv'
+        file_name = f'bg_mh_per_person_mortality_{dates["start_date"]}_{dates["end_date"]}'
         file_location = self.save_df_to_file(df=df, location=self.source_loc, file_name=file_name, method='csv')
 
         return file_location
