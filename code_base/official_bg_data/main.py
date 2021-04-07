@@ -4,8 +4,6 @@ from code_base.official_bg_data.folder_constants import *
 
 if __name__ == '__main__':
     c = GetOfficialBGStats()
-    # file = eu_mortality.get_data()
-    # print(file)
     file = c.get_by_region_data()
     c.save_df_to_file(file,
                       location=source_official_bg_region_data,

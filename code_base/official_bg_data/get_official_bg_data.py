@@ -49,6 +49,8 @@ class GetOfficialBGStats(SaveFile):
                            year: Optional[int] = 2020,
                            month: Optional[int] = 12,
                            day: Optional[int] = 31) -> pd.DataFrame:
+        # Due to the focus of this
+
         df = self.get_data('by_region')
 
         df.drop(columns=[col for col in df if
@@ -63,7 +65,6 @@ class GetOfficialBGStats(SaveFile):
         df.set_index('Date', inplace=True)
         return df
 
-    # TODO: Implement functions for by age stats and testing stats.
     def get_tests_to_cases_by_week(self,
                                    start_year: int = 2020,
                                    start_month: int = 6,
