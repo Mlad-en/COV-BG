@@ -124,4 +124,4 @@ if __name__ == '__main__':
 
     c = DownloadInfostatDT('bg_pop_by_age_sex_reg')
     file = c.fetch_infostat_data()
-    c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
+    bg_population_raw = c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
