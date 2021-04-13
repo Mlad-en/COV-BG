@@ -4,7 +4,7 @@ import numpy as np
 
 from code_base.excess_mortality.eurostat_bulk_base import GetBulkEurostatDataBase, DECODE_DEMO_COL
 from code_base.excess_mortality.folder_constants import *
-from code_base.utils.save_file_utils import *
+from code_base.utils.file_utils import *
 
 
 class GetExcessMortalityCountry(GetBulkEurostatDataBase):

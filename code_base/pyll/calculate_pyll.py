@@ -13,7 +13,7 @@ from code_base.pyll.get_life_data import GetWHOLifeData
 from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84, ages_all
 from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 
 
 class CalcExcessMortYLL(SaveFile):

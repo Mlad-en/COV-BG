@@ -8,13 +8,22 @@ from code_base.excess_mortality.decode_args import FILE_EXT_TYPE
 
 
 def weeks_for_year(year: int) -> int:
-    # per ISO 8601,the last week of the year always contains the 28th of Dec.
-    # https://en.wikipedia.org/wiki/ISO_week_date#Last_week
+    """
+    Per ISO 8601,the last week of the year always contains the 28th of Dec.
+    https://en.wikipedia.org/wiki/ISO_week_date#Last_week
+    :param year: Year for which last week number is required
+    :return: Returns the last week number for a given year (53 weeks or 52 weeks).
+    """
     last_week = date(year, 12, 28)
     return last_week.isocalendar()[1]
 
 
 def generate_past_week_years(start_year: int, end_year: int) -> List:
+    """Function is used to generate the
+    :param start_year: Start interval for week generation.
+    :param end_year: End interval for week generation (inclusive).
+    :return: Returns a list of all weeks for the given interval in the format: ['2020W52', '2020W53', '2021W01']
+    """
     week_year = []
     years = [year for year in range(start_year, end_year+1)]
     [[week_year.append(f'{year}W{str(week).zfill(2)} ') for week in range(1, weeks_for_year(year)+1)] for year in years]

@@ -8,7 +8,7 @@ from code_base.excess_mortality.cov_mort import GetFullCovidMortality
 from code_base.pyll.decode_vars import LIST_LIFE_EXP_DT_COUNTRIES
 from code_base.pyll.folder_constants import output_pyll_bg, output_pyll_cz, source_le_countries_data
 from code_base.pyll.get_life_data import FullLifeExpectancy
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 
 
 class MergeMortalityLifeExpectancy(SaveFile):

@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from code_base.excess_mortality.decode_args import *
-from code_base.utils.save_file_utils import *
+from code_base.utils.file_utils import *
 from code_base.excess_mortality.url_constants import *
 
 class GetBulkEurostatDataBase(SaveFile):

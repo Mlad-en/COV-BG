@@ -6,7 +6,7 @@ import pandas as pd
 
 from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_excess_mortality import ExcessMortalityMapper
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 
 
 class CalcExcessMortality(SaveFile):

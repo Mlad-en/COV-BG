@@ -6,7 +6,7 @@ import requests as req
 
 
 from code_base.pyll.folder_constants import source_WHO_life_data, source_le_countries_data
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 from code_base.pyll.decode_loc_vars import EU_COUNTRIES_ISO_3_DECODES
 from code_base.pyll.decode_vars import *
 from code_base.pyll.url_constants import WHO_DATA

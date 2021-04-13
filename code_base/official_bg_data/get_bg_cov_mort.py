@@ -9,7 +9,7 @@ import requests
 from code_base.excess_mortality.folder_constants import source_cov_bg_auto
 from code_base.official_bg_data.scraping_constants import *
 from code_base.official_bg_data.url_constants import BG_MH_URL
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 
 
 class GetBGMort(SaveFile):

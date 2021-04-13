@@ -4,7 +4,7 @@ import pandas as pd
 
 from code_base.excess_mortality.folder_constants import source_cov_bg_comb, output_excess_mortality_regions
 from code_base.official_bg_data.get_official_bg_data import GetOfficialBGStats
-from code_base.utils.save_file_utils import SaveFile
+from code_base.utils.file_utils import SaveFile
 
 
 class CovMortAttrs(SaveFile):
