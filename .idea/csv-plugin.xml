@@ -59,6 +59,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\code_base\excess_mortality\get_infostat_dt.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\code_base\excess_mortality\get_pop_bg.py">
           <value>
             <Attribute>

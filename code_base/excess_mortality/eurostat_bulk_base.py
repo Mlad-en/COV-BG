@@ -78,25 +78,3 @@ class GetBulkEurostatDataBase(SaveFile):
         }
         for key, val in decode_demo_info.items():
             self.eurostat_df[key] = self.eurostat_df.apply(lambda x: val.get(x[key]), axis=1)
-
-    # def save_df(self, file_name: str, loc: str, method: str = 'csv'):
-    #
-    #     file_type = FILE_EXT_TYPE.get(method)
-    #     if not file_type:
-    #         raise ValueError('Incorrect Save DF method called.')
-    #
-    #     location = loc
-    #     file_name += file_type
-    #     file_path = path.join(location, file_name)
-    #
-    #     if method == 'csv':
-    #         self.eurostat_df.to_csv(file_path, index=False, encoding='utf-8-sig')
-    #     # TODO: Implement other save df methods
-    #     if method == 'latex':
-    #         raise ValueError('Method NOT yet implemented')
-    #     if method == 'excel':
-    #         raise ValueError('Method NOT yet implemented')
-    #     if method == 'pickle':
-    #         raise ValueError('Method NOT yet implemented')
-    #
-    #     return file_path

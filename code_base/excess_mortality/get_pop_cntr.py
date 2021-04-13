@@ -1,3 +1,4 @@
+import warnings
 from typing import List
 from os import path
 
@@ -12,6 +13,9 @@ from code_base.utils.common_query_params import ages_all
 
 
 def get_bg_pop(file: str, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
+    # Catch and suppress UserWarning from openpyxl about "Workbook contains no default style".
+    warnings.simplefilter('ignore', category=UserWarning)
+
     df = pd.read_excel(file, sheet_name='Sheet0', engine='openpyxl', skiprows=3)
 
     # Remove Year column

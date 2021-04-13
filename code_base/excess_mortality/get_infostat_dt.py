@@ -56,6 +56,10 @@ class DownloadInfostatDT:
         return os.listdir(self.raw_file_loc)
 
     def fetch_infostat_data(self) -> List:
+        # Silence Webdriver Manager console logging.
+        os.environ["WDM_LOG_LEVEL"] = '0'
+
+        # Run Chrome browser in headless mode.
         options = Options()
         options.add_experimental_option("prefs", self.preferences)
         options.add_argument('--headless')
@@ -63,6 +67,7 @@ class DownloadInfostatDT:
         browser.get(self.url)
         browser.maximize_window()
 
+        # Change webpage language to English from Bulgarian default.
         change_lang = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="EN"]')))
         change_lang.click()
 
@@ -87,9 +92,10 @@ class DownloadInfostatDT:
         current_page = browser.current_url
         WebDriverWait(browser, 15).until(EC.url_changes(current_page))
 
-        # Download Data
+        # List out files in directory before download
         initial_dwnld_files = self.get_all_dwnld_files()
 
+        # Request data download in xlsx format
         request_data = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="Download"]')))
         request_data.click()
         request_data = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="XLSX"]')))
@@ -104,7 +110,7 @@ class DownloadInfostatDT:
 
         browser.quit()
 
-        return [file for file in self.get_all_dwnld_files() if file not in initial_dwnld_files]
+        return [fl for fl in self.get_all_dwnld_files() if fl not in initial_dwnld_files]
 
     def rename_and_move_file(self, files: List, new_file_name: str) -> str:
         if files:

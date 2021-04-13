@@ -129,11 +129,13 @@ class CalcExcessMortality(SaveFile):
                                     (df['Year'] == 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)
                             )]
         if not add_age:
-            curr_year_mort.drop('Age', axis=1, inplace=True)
-            curr_year_mort = curr_year_mort.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+            c_year_mort_copy = curr_year_mort.copy(deep=True)
+            c_year_mort_copy.drop('Age', axis=1, inplace=True)
+            c_year_mort_copy = c_year_mort_copy.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
         else:
-            curr_year_mort = curr_year_mort.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-        return curr_year_mort
+            c_year_mort_copy = curr_year_mort.copy(deep=True)
+            c_year_mort_copy = c_year_mort_copy.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
+        return c_year_mort_copy
 
     @staticmethod
     def merge_weekly_dfs(curr_year: pd.DataFrame, prev_years: pd.DataFrame, param: str = 'year', add_age: bool = False) -> pd.DataFrame:

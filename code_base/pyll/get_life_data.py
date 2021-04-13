@@ -59,6 +59,7 @@ class FullLifeExpectancy(SaveFile):
     """
     Class only applicable for Bulgaria and Czechia currently. Data for countries is controlled via the
     LIFE_EXPECTANCY_DATA_PACKAGED bindings.
+    TODO: class needs to be updated due to recent update from NSI which implemented a CloudFlare wall on its website, making scraping the site difficult.
     """
     def __init__(self, country: str):
         self.countries = LIST_LIFE_EXP_DT_COUNTRIES
