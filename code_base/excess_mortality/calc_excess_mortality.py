@@ -23,6 +23,7 @@ class CalcExcessMortality(SaveFile):
 
     @property
     def fetch_data(self) -> str:
+
         data = ExcessMortalityMapper(cntry=self.cntry,
                                      add_current_year=self.add_current_year,
                                      current_year_weeks=self.current_year_weeks)
@@ -78,7 +79,9 @@ class CalcExcessMortality(SaveFile):
 
     @staticmethod
     def setup_weekly_std(df: pd.DataFrame) -> pd.DataFrame:
-        """For all years which have only 52 weeks, copy mortality for week 52 to week 53."""
+        """For all years which have only 52 weeks, copy mortality for week 52 to week 53.
+        This is similar to the way it is handled in https://ourworldindata.org/excess-mortality-covid,
+        where they all together compare data from week 52 for all previous years (Endnote #5)."""
         df.fillna(method='pad', inplace=True)
         return df
 

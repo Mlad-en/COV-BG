@@ -18,32 +18,32 @@ if __name__ == '__main__':
                                  'bg_total_excess_mortality_by_loc_sex_age',
                                  method='excel')
     # Generate agg excess mortality.
-    files = bg_mortality.excess_mortality_to_file(mortality, pop_bg, sex=sex)
-    bg_mort = CovMortAttrs()
-    all_sx_official_exc_mort = bg_mort.add_exces_official_dt(exc_mort_total_loc=files['total'])
-    all_mort = bg_mort.add_test_pos_data_df(all_sx_official_exc_mort)
-    bg_mort.save_df_to_file(df=all_mort,
-                            location=bg_mort.output_loc,
-                            file_name="TOTAL_BG_Total_excess_mortality_off_mortality_testing_2020")
-
-    for age in age_groups_for_exc_mort:
-        bg_mortality.excess_mortality_to_file(mortality, get_bg_pop(age=age, sex=sex), age=age, sex=sex)
-
-    # Generate Data about Excess mortality for the EU
-    eu_mortality = CalcExcessMortality()
-    mortality = eu_mortality.get_mortality_df
-
-    pop = GetEUPopulation()
-    pop.clean_up_df()
-    pop_dt = pop.get_agg_sex_cntry_pop(sex=sex)
-    eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs, sex=sex)
-
-    # If 90+ then use the population data from the UN since Eurostat's data cuts off at 85+.
-    for age in age_groups_for_exc_mort:
-        if '(90+)' not in age:
-            pop_dt = pop.get_agg_sex_cntry_pop(sex=sex, age=age)
-        else:
-            eu = GetPopUN()
-            eu.clean_up_df()
-            pop_dt = eu.get_agg_sex_cntry_pop(sex=sex, age=age)
-        eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs, sex=sex, age=age)
+    # files = bg_mortality.excess_mortality_to_file(mortality, pop_bg, sex=sex)
+    # bg_mort = CovMortAttrs()
+    # all_sx_official_exc_mort = bg_mort.add_exces_official_dt(exc_mort_total_loc=files['total'])
+    # all_mort = bg_mort.add_test_pos_data_df(all_sx_official_exc_mort)
+    # bg_mort.save_df_to_file(df=all_mort,
+    #                         location=bg_mort.output_loc,
+    #                         file_name="TOTAL_BG_Total_excess_mortality_off_mortality_testing_2020")
+    #
+    # for age in age_groups_for_exc_mort:
+    #     bg_mortality.excess_mortality_to_file(mortality, get_bg_pop(age=age, sex=sex), age=age, sex=sex)
+    #
+    # # Generate Data about Excess mortality for the EU
+    # eu_mortality = CalcExcessMortality()
+    # mortality = eu_mortality.get_mortality_df
+    #
+    # pop = GetEUPopulation()
+    # pop.clean_up_df()
+    # pop_dt = pop.get_agg_sex_cntry_pop(sex=sex)
+    # eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs, sex=sex)
+    #
+    # # If 90+ then use the population data from the UN since Eurostat's data cuts off at 85+.
+    # for age in age_groups_for_exc_mort:
+    #     if '(90+)' not in age:
+    #         pop_dt = pop.get_agg_sex_cntry_pop(sex=sex, age=age)
+    #     else:
+    #         eu = GetPopUN()
+    #         eu.clean_up_df()
+    #         pop_dt = eu.get_agg_sex_cntry_pop(sex=sex, age=age)
+    #     eu_mortality.excess_mortality_to_file(mortality, pop_dt, exclude_cntrs=exclude_cntrs, sex=sex, age=age)

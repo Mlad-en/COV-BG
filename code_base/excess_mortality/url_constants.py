@@ -30,11 +30,23 @@ CZ_COV_URL = {
     }
 }
 
-# National Statistics Institute Bulgaria
+# National Statistics Institute Bulgaria (NSI)
+# NSI implemented a CloudFlare protection and scraping that website is no longer possible.
 NSI_DATA = {
     'main': 'https://www.nsi.bg',
     'pages': {
         'bg_pop_by_age_sex_reg':
             '/en/content/6708/population-districts-age-place-residence-and-sex'
+    }
+}
+
+# Information System of the National Statistical Institute. Used for historical data.
+# NSI implemented a CloudFlare protection and scraping that website is no longer possible. Using this one instead.
+INFOSTAT_DATA = {
+    'main': 'https://infostat.nsi.bg',
+    'pages': {
+        'bg_pop_by_age_sex_reg': '/infostat/pages/reports/query.jsf?x_2=1168',
+        'mortality_by_age_sex_mun': '/infostat/pages/reports/query.jsf?x_2=1033',
+
     }
 }
