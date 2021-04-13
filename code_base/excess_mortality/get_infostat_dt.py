@@ -37,17 +37,21 @@ class DownloadInfostatDT:
     def exclude_params(self):
         exc_vars = {
             'bg_pop_by_age_sex_reg': {
-                'start_year': 2001,
-                'end_year': 2020,
+                'years': [str(year) for year in range(2001, 2020)],
                 'additional': ['Urban', 'Rural'],
             },
             'mortality_by_age_sex_mun': {
-                'start_year': 2000,
-                'end_year': 2015,
-                'additional': []
+                'years': [str(year) for year in range(2000, 2015)],
+                'additional': [],
+            },
+            'life_expectancy_by_sex_region': {
+                # Periods for Life Expectancy are presented in 3 year intervals -e.g. "2016 - 2018".
+                # Filter out all intervals except latest (2017 - 2019).
+                'years': [f'{year} - {year+2}' for year in range(2006, 2017)],
+                'additional': [],
             }
         }
-        exclude_vars = [str(year) for year in range(exc_vars[self.data_type]['start_year'], exc_vars[self.data_type]['end_year'])]
+        exclude_vars = exc_vars[self.data_type]['years']
         exclude_vars.extend(exc_vars[self.data_type]['additional'])
 
         return exclude_vars
@@ -126,8 +130,15 @@ class DownloadInfostatDT:
 if __name__ == '__main__':
     c = DownloadInfostatDT('mortality_by_age_sex_mun')
     file = c.fetch_infostat_data()
-    c.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
+    mort_reg = c.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
+    print(mort_reg)
 
     c = DownloadInfostatDT('bg_pop_by_age_sex_reg')
     file = c.fetch_infostat_data()
     bg_population_raw = c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
+    print(bg_population_raw)
+
+    c = DownloadInfostatDT('life_expectancy_by_sex_region')
+    file = c.fetch_infostat_data()
+    lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex_region')
+    print(lf_exp)

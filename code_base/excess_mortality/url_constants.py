@@ -47,6 +47,6 @@ INFOSTAT_DATA = {
     'pages': {
         'bg_pop_by_age_sex_reg': '/infostat/pages/reports/query.jsf?x_2=1168',
         'mortality_by_age_sex_mun': '/infostat/pages/reports/query.jsf?x_2=1033',
-
+        'life_expectancy_by_sex_region': '/infostat/pages/reports/query.jsf?x_2=41'
     }
 }
