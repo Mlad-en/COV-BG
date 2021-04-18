@@ -251,7 +251,7 @@ class CalcExcessMortality(SaveFile):
                                  exclude_cntrs: Optional[List] = ['']) -> Dict:
         """
         :param mortality_df: Add reference to the get_mortality_df attribute.
-        :param pop_df:
+        :param pop_df: Population for the given region/countries.
         :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
         :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
         :param exclude_cntrs: a List of countries that require an exclusion from the Dataset.

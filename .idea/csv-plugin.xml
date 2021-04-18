@@ -94,6 +94,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\code_base\excess_mortality\scraping_constants.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\code_base\excess_mortality\test.csv">
           <value>
             <Attribute>

@@ -2,6 +2,7 @@ import os
 import time
 from typing import List
 
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -11,6 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 from code_base.excess_mortality.folder_constants import *
+from code_base.excess_mortality.scraping_constants import BG_MUNICIPALITIES
 from code_base.excess_mortality.url_constants import INFOSTAT_DATA
 
 
@@ -77,14 +79,14 @@ class DownloadInfostatDT:
         # Run Chrome browser in headless mode.
         options = Options()
         options.add_experimental_option("prefs", self.preferences)
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         browser = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         browser.get(self.url)
         browser.maximize_window()
 
         # Change webpage language to English from Bulgarian default.
-        change_lang = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="EN"]')))
-        change_lang.click()
+        # change_lang = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="EN"]')))
+        # change_lang.click()
 
         time.sleep(5)
 
@@ -99,10 +101,17 @@ class DownloadInfostatDT:
                 EC.element_to_be_clickable((By.XPATH, f'//span[text()="{el}"]/../../td[1]/div/div/span')))
             exclude_point.click()
 
+        # Uncheck all Regions for mortality by age, sex, municipality -- definitely less than elegant.
+        # TODO: make function more composable.
+        if self.data_type == 'mortality_by_age_sex_mun':
+            regions = browser.find_elements_by_xpath('//td[text()=4]/../td[1]/div/div/span')
+            for reg in regions:
+                reg.click()
+
         time.sleep(5)
 
         # Request Data
-        browser.find_elements_by_xpath('//*[text()="Send"]')[1].click()
+        browser.find_elements_by_xpath('//*[text()="Заяви"]')[0].click()
         # Wait for results page
         current_page = browser.current_url
         WebDriverWait(browser, 15).until(EC.url_changes(current_page))
@@ -111,7 +120,7 @@ class DownloadInfostatDT:
         initial_dwnld_files = self.get_all_dwnld_files()
 
         # Request data download in xlsx format
-        request_data = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="Download"]')))
+        request_data = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="Изтегли"]')))
         request_data.click()
         request_data = WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="XLSX"]')))
         request_data.click()
@@ -137,29 +146,35 @@ class DownloadInfostatDT:
         else:
             raise ValueError('Empty File List given as files argument.')
 
+    @staticmethod
+    def rename_municipalities(fl: str):
+        file = fl
+        df = pd.read_excel(file, sheet_name='Sheet0', engine='openpyxl', skiprows=2, header=[0, 1])
+        df[df.columns[0]] = df[df.columns[0]].apply(lambda x: BG_MUNICIPALITIES.get(x))
+        df.to_excel(file, engine='openpyxl', sheet_name='Sheet1')
 
 if __name__ == '__main__':
     c = DownloadInfostatDT('mortality_by_age_sex_mun')
     file = c.fetch_infostat_data()
-    mort_reg = c.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
+    mort_reg = c.rename_and_move_file(file, 'bg_infostat_mortality_by_age_sex_mun')
     print(mort_reg)
 
-    c = DownloadInfostatDT('bg_pop_by_age_sex_reg')
-    file = c.fetch_infostat_data()
-    bg_population_raw = c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
-    print(bg_population_raw)
-
-    c = DownloadInfostatDT('avg_life_expectancy_by_sex')
-    file = c.fetch_infostat_data()
-    lf_exp_avg = c.rename_and_move_file(file, 'infostat_avg_life_expectancy_by_sex')
-    print(lf_exp_avg)
-
-    c = DownloadInfostatDT('life_expectancy_by_sex')
-    file = c.fetch_infostat_data()
-    lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex')
-    print(lf_exp)
-
-    c = DownloadInfostatDT('population_by_municipality')
-    file = c.fetch_infostat_data()
-    pop_mun = c.rename_and_move_file(file, 'infostat_population_by_municipality')
-    print(pop_mun)
+    # c = DownloadInfostatDT('bg_pop_by_age_sex_reg')
+    # file = c.fetch_infostat_data()
+    # bg_population_raw = c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
+    # print(bg_population_raw)
+    #
+    # c = DownloadInfostatDT('avg_life_expectancy_by_sex')
+    # file = c.fetch_infostat_data()
+    # lf_exp_avg = c.rename_and_move_file(file, 'infostat_avg_life_expectancy_by_sex')
+    # print(lf_exp_avg)
+    #
+    # c = DownloadInfostatDT('life_expectancy_by_sex')
+    # file = c.fetch_infostat_data()
+    # lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex')
+    # print(lf_exp)
+    #
+    # c = DownloadInfostatDT('population_by_municipality')
+    # file = c.fetch_infostat_data()
+    # pop_mun = c.rename_and_move_file(file, 'infostat_population_by_municipality')
+    # print(pop_mun)
