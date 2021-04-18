@@ -44,11 +44,22 @@ class DownloadInfostatDT:
                 'years': [str(year) for year in range(2000, 2015)],
                 'additional': [],
             },
-            'life_expectancy_by_sex_region': {
+            'avg_life_expectancy_by_sex': {
                 # Periods for Life Expectancy are presented in 3 year intervals -e.g. "2016 - 2018".
                 # Filter out all intervals except latest (2017 - 2019).
                 'years': [f'{year} - {year+2}' for year in range(2006, 2017)],
                 'additional': [],
+            },
+            'life_expectancy_by_sex': {
+                # Periods for Life Expectancy are presented in 3 year intervals -e.g. "2016 - 2018".
+                # Filter out all intervals except latest (2017 - 2019).
+                'years': [f'{year} - {year+2}' for year in range(2008, 2017)],
+                'additional': ['Urban', 'Rural', 'Probability of dying', 'Probability of surviving'],
+            },
+            'population_by_municipality': {
+                # Get municipality population before the start of the pandemic
+                'years': [year for year in range(2000, 2021) if year != 2019],
+                'additional': ['Urban', 'Rural']
             }
         }
         exclude_vars = exc_vars[self.data_type]['years']
@@ -138,7 +149,17 @@ if __name__ == '__main__':
     bg_population_raw = c.rename_and_move_file(file, 'infostat_bg_pop_by_age_sex_reg')
     print(bg_population_raw)
 
-    c = DownloadInfostatDT('life_expectancy_by_sex_region')
+    c = DownloadInfostatDT('avg_life_expectancy_by_sex')
     file = c.fetch_infostat_data()
-    lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex_region')
+    lf_exp_avg = c.rename_and_move_file(file, 'infostat_avg_life_expectancy_by_sex')
+    print(lf_exp_avg)
+
+    c = DownloadInfostatDT('life_expectancy_by_sex')
+    file = c.fetch_infostat_data()
+    lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex')
     print(lf_exp)
+
+    c = DownloadInfostatDT('population_by_municipality')
+    file = c.fetch_infostat_data()
+    pop_mun = c.rename_and_move_file(file, 'infostat_population_by_municipality')
+    print(pop_mun)

@@ -17,6 +17,7 @@ openpyxl = "*"
 xlrd = "*"
 seaborn = "*"
 matplotlib = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.8"
