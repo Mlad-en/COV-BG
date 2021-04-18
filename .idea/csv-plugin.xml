@@ -17,6 +17,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\code_base\excess_mortality\calc_municipality_mort.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\code_base\excess_mortality\common_query_params.py">
           <value>
             <Attribute>
