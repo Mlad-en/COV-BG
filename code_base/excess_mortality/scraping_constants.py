@@ -1,4 +1,5 @@
 BG_MUNICIPALITIES = {
+    'ОБЩО': 'Total',
     'Общо за страната': 'Total',
     'Белоградчик': 'Belogradchik',
     'Бойница': 'Boynitsa',

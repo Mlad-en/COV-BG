@@ -255,7 +255,7 @@ class CalcExcessMortality(SaveFile):
         :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
         :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
         :param exclude_cntrs: a List of countries that require an exclusion from the Dataset.
-        :return: Function returns a dictionary of the file location of the per week deaths (key: weekly_deaths)
+        :return: Function returns a dictionary of the file output_loc of the per week deaths (key: weekly_deaths)
         and total deaths (key: total_deaths)
         """
         df = mortality_df

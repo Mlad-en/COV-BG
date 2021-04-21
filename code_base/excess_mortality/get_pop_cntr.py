@@ -5,6 +5,7 @@ from os import path
 import pandas as pd
 
 from code_base.excess_mortality.decode_args import INFOSTAT_DECODE_AGE_GROUPS
+from code_base.excess_mortality.scraping_constants import BG_MUNICIPALITIES, DECODE_REGION
 from code_base.pyll.folder_constants import source_pop_data
 from code_base.utils.common_query_params import ages_all
 
@@ -40,6 +41,35 @@ def get_bg_pop(file: str, sex: List = ['Total'], age: List = ['Total']) -> pd.Da
 
     # filter age and sex groups
     df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
+
+    return df
+
+
+def get_bg_mun_pop(file: str) -> pd.DataFrame:
+    df = pd.read_excel(file, sheet_name='Sheet0', skiprows=4)
+
+    # Removes Legend At the bottom
+    df.dropna(how='any', inplace=True)
+
+    # Rename columns. First column is unnamed, hence referenced as df.columns[0]
+    df.rename(columns={df.columns[0]: 'Location',
+                       'Общо': 'Total',
+                       'Мъже': 'Male',
+                       'Жени': 'Female'}, inplace=True)
+
+    # Translate municipality names
+    df['Location'] = df['Location'].apply(lambda x: BG_MUNICIPALITIES.get(x))
+
+    # add Region information
+    df['Region'] = df.apply(lambda x: DECODE_REGION.get(x['Location']), axis=1)
+    # Method will not fill in Byala since there are two municipalities in Bulgaria with that name - one in Ruse, and one in Varna.
+    # To account for this Region is copied from neighbouring row.
+    df['Region'] = df['Region'].fillna(method='backfill')
+
+    # Convert the Total, Male and Female columns to rows, and their values transposed to a new column: Population
+    df = df.melt(id_vars=['Location', 'Region'], value_vars=['Total', 'Male', 'Female'], var_name='Sex', value_name='Population')
+
+    df['Population'] = df['Population'].map(int)
 
     return df
 

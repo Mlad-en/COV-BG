@@ -71,7 +71,7 @@ class GetBGMort(SaveFile):
     @staticmethod
     def parse_article_text_and_date(article_link: str) -> Tuple[str, str]:
         """
-        :param article_link: URL location to particular COVID-19  update from the Ministry of Health.
+        :param article_link: URL output_loc to particular COVID-19  update from the Ministry of Health.
         :return: Returns a tuple containing the art_date and article text from a given article link.
         """
         req = requests.get(article_link)
@@ -165,13 +165,13 @@ class GetBGMort(SaveFile):
 
     def generate_per_person_mort_dt(self, file_loc: str, dates: Dict) -> str:
         """
-        Function receives a file location with raw article data and parses it for comorbities, age and sex of the person.
+        Function receives a file output_loc with raw article data and parses it for comorbities, age and sex of the person.
         The function saves a csv file of the generated dataframe and returns the file path to the file.
         :param dates: Periods should be provided in a Dictionary format as follows:
         {'start_date':(YEAR:int, MM:int, DD:int),
         'end_date': (YEAR:int, MM:int, DD:int)}
         E.g. start date: (2020,4,21) || end date: (2020,4,25)
-        :param file_loc: Receives a file location with raw per person data scraped from the Bulgarian Ministry of Health.
+        :param file_loc: Receives a file output_loc with raw per person data scraped from the Bulgarian Ministry of Health.
         :return: Returns the file path of the created csv file.
         """
 

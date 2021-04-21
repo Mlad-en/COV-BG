@@ -67,7 +67,7 @@ class DownloadInfostatDT:
             'population_by_municipality': {
                 # Get municipality population before the start of the pandemic, i.e. 2019 only.
                 'years': [year for year in range(2000, 2021) if year != 2019],
-                'additional': ['В градовете', 'В градовете']
+                'additional': ['В градовете', 'В селата']
             },
             'mortality_by_age_sex_mun': {
                 'years': [str(year) for year in range(2000, 2015)],

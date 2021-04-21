@@ -1,25 +1,44 @@
+import os
+import warnings
+
 import pandas as pd
 from math import sqrt
 
-from code_base.excess_mortality.folder_constants import output_excess_mortality_municipalities
+from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
+from code_base.excess_mortality.get_pop_cntr import get_bg_mun_pop
 from code_base.excess_mortality.scraping_constants import BG_MUNICIPALITIES, DECODE_REGION
 from code_base.utils.file_utils import SaveFile
 
 
 class CalcMunMort(SaveFile):
-    def __init__(self, fl: str):
-        self.yearly_mun_mort = fl
-        self.location = output_excess_mortality_municipalities
+    """
+    Todo: Inherit from CalcExcessMortality to take advantage of Excess Mortality and P-score calculation functions.
+    """
+    def __init__(self):
+
+        self.source_location = source_cov_bg_mun
+        self.output_loc = output_excess_mortality_municipalities
         super().__init__()
 
-    @property
-    def read_file(self) -> pd.DataFrame:
-        df = pd.read_excel(self.yearly_mun_mort, sheet_name='Sheet0', engine='openpyxl', skiprows=2, header=[0,1])
+    @staticmethod
+    def read_file(fl) -> pd.DataFrame:
+        yearly_mun_mort = fl
+        # Catch and suppress UserWarning from openpyxl about "Workbook contains no default style".
+        warnings.simplefilter('ignore', category=UserWarning)
+
+        df = pd.read_excel(yearly_mun_mort, sheet_name='Sheet0', engine='openpyxl', skiprows=2, header=[0, 1])
         return df
 
-    def clean_df(self) -> pd.DataFrame:
-        df = self.read_file
+    def read_cov_file(self) -> pd.DataFrame:
+        # File provided by 265 stories about the Economy: https://265obshtini.bg/
+        fl = r'mz_covid19_upload.xlsx'
+        file_path = os.path.join(self.source_location, fl)
+        df = pd.read_excel(file_path, sheet_name='Sheet1')
+        return df
+
+    def clean_df(self, fl) -> pd.DataFrame:
+        df = self.read_file(fl)
         # Translate municipality names in English
         df[df.columns[0]] = df[df.columns[0]].apply(lambda x: BG_MUNICIPALITIES.get(x))
 
@@ -32,7 +51,7 @@ class CalcMunMort(SaveFile):
         new.reset_index(inplace=True)
         new.drop(new.columns[0], axis=1, inplace=True)
 
-        # Backfill values for location to propagate to the sex rows
+        # Backfill values for output_loc to propagate to the sex rows
         new.iloc[:, -1] = new.iloc[:, -1].fillna(method='pad')
 
         # Rename columns accordingly and reorder columns
@@ -48,6 +67,8 @@ class CalcMunMort(SaveFile):
 
         # add Region information
         new['Region'] = new.apply(lambda x: DECODE_REGION.get(x['Location']), axis=1)
+        # Method will not fill in Byala since there are two municipalities in Bulgaria with that name - one in Ruse, and one in Varna.
+        # To account for this Region is copied from neighbouring row.
         new['Region'] = new['Region'].fillna(method='backfill')
 
         # Reorder columns, make region first column
@@ -75,24 +96,78 @@ class CalcMunMort(SaveFile):
             axis=1).round(1)
 
         new['P_score_fluctuation'] = new.apply(
-            lambda x: (x['P_Score'] - (((x['2020'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100))
+            lambda x: (x['P_Score'] - (
+                    ((x['2020'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100))
             if x['Upper_bound_Mean_mortality'] != 0 else 0,
             axis=1).round(1)
 
         # Visually represent Mean, Excess Mortality and P-score with their respective confidence intervals
         new['Mean Mortality ±'] = new['Mean_Mortality'].round(1).map(str) + ' (±' + new['Conf_interval'].map(str) + ')'
-        new['Excess Mortality ±'] = new['Excess_mortality_Mean'].map(str) + ' (±' + new['Excess_mortality_fluc'].map(str) + ')'
+        new['Excess Mortality ±'] = new['Excess_mortality_Mean'].map(str) + ' (±' + new['Excess_mortality_fluc'].map(
+            str) + ')'
         new['P_score ±'] = new['P_Score'].map(str) + '% (±' + new['P_score_fluctuation'].map(str) + '%)'
 
         return new
 
+    def calc_covid_mort_cfr(self) -> pd.DataFrame:
+        """
+        :return: Returns a dataframe object containing data about Covid-19 mortality by municipality, including CFR.
+        """
+        df = self.read_cov_file()
+
+        # Remove legend at the bottom and rename columns appropriately
+        df.dropna(how='all', axis=1, inplace=True)
+        columns = {df.columns[0]: 'Location',
+                   df.columns[1]: 'Diagnosed_Home_Treatment',
+                   df.columns[2]: 'Hospitalized',
+                   df.columns[3]: 'Total Cases',
+                   df.columns[4]: 'Recovered',
+                   df.columns[5]: 'Deaths'}
+        df.rename(columns=columns, inplace=True)
+
+        # Remove 'Municipality' from the text of the Location column
+        df['Location'] = df['Location'].str.replace('Община ', '', regex=False)
+
+        # Translate Municipalities in English
+        df['Location'] = df.apply(lambda x: BG_MUNICIPALITIES.get(x['Location']), axis=1)
+
+        # add Region information
+        df['Region'] = df.apply(lambda x: DECODE_REGION.get(x['Location']), axis=1)
+
+        # Reorder columns, make region first column
+        cols = list(df.columns.values)
+        cols = [cols[-1]] + cols[0:-1]
+        df = df[cols].copy(deep=True)
+
+        # Calculate Case Fatality Ratio (CFR)
+        df['CFR'] = df.apply(lambda x: (x['Deaths'] / x['Total Cases']) * 100, axis=1).round(2)
+
+        # Sort Data by CFR descending
+        df.sort_values(by='CFR', ascending=False, inplace=True)
+
+        return df
+
 
 if __name__ == '__main__':
-    c = DownloadInfostatDT('mortality_by_age_sex_mun')
-    file = c.fetch_infostat_data()
-    mort_reg = c.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
-    mort = CalcMunMort(mort_reg)
-    mort.save_df_to_file(df=mort.clean_df(),
-                         file_name='BG_excess_mortality_by_municipality_and_sex',
-                         location=mort.location,
+    # mort_raw = DownloadInfostatDT('mortality_by_age_sex_mun')
+    # file = mort_raw.fetch_infostat_data()
+    # mort_reg = mort_raw.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
+    #
+    # pop = DownloadInfostatDT('population_by_municipality')
+    # file = pop.fetch_infostat_data()
+    # pop_mun = pop.rename_and_move_file(file, 'infostat_population_by_municipality')
+
+    mort = CalcMunMort()
+    crfs = mort.calc_covid_mort_cfr()
+    mort.save_df_to_file(df=crfs,
+                         file_name='BG_covid_19_mortality_by_municipality',
+                         location=mort.output_loc,
                          method='excel')
+
+    # dtfrm = mort.clean_df(mort_reg)
+    #
+    # merge_mort_pop = dtfrm.merge(get_bg_mun_pop(pop_mun), on=['Location', 'Sex', 'Region'])
+    # mort.save_df_to_file(df=merge_mort_pop,
+    #                      file_name='BG_excess_mortality_by_municipality_and_sex_and_pop',
+    #                      location=mort.output_loc,
+    #                      method='excel')

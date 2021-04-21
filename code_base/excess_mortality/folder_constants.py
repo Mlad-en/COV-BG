@@ -14,6 +14,7 @@ source_cov_mort_cz = path.join(source_cov_mort, 'Czechia')
 source_cov_mort_bg = path.join(source_cov_mort, 'Bulgaria')
 source_cov_bg_auto = path.join(source_cov_mort_bg, 'Automated')
 source_cov_bg_comb = path.join(source_cov_mort_bg, 'Combined')
+source_cov_bg_mun = path.join(source_cov_mort_bg, 'Municipalities')
 
 
 # Output Data

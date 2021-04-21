@@ -55,11 +55,11 @@ class SaveFile:
         pass
 
     @staticmethod
-    def save_df_to_file(df: pd.DataFrame, location, file_name: str, method: str = 'csv') -> str:
+    def save_df_to_file(df: pd.DataFrame, location, file_name: str, method: str = 'csv', sheet_name: str ='Sheet1') -> str:
         """
 
         :param df: DataFrame object that needs to be saved.
-        :param location: The location where the DataFrame needs to be saved.
+        :param location: The output_loc where the DataFrame needs to be saved.
         :param file_name: The file name of the saved file.
         :param method: The file type - by default it's 'csv'. Others are excel, pickle and latex.
         :return: Returns the absolute path to the saved file.
@@ -75,7 +75,7 @@ class SaveFile:
         if method == 'csv':
             df.to_csv(file_path, index=False, encoding='utf-8-sig')
         if method == 'excel':
-            df.to_excel(file_path, index=False, encoding='utf-8-sig')
+            df.to_excel(file_path, index=False, encoding='utf-8-sig', sheet_name=sheet_name)
         # TODO: Implement other save df methods
         if method == 'latex':
             raise ValueError('Method NOT yet implemented')
