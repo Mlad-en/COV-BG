@@ -4,12 +4,13 @@ from typing import Optional, List, Dict
 import numpy as np
 import pandas as pd
 
+from code_base.excess_mortality.base_calc_excess import ExcessMortBase
 from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_excess_mortality import ExcessMortalityMapper
 from code_base.utils.file_utils import SaveFile
 
 
-class CalcExcessMortality(SaveFile):
+class CalcExcessMortality(SaveFile, ExcessMortBase):
 
     def __init__(self,
                  cntry: str = None,
@@ -94,6 +95,7 @@ class CalcExcessMortality(SaveFile):
         }
         df.drop('Week', axis=1, inplace=True)
         df = df.groupby(group_params[add_age], as_index=False).sum('Mortality')
+
         return df
 
     def add_std(self, df, setup_param: str = 'year', add_age: bool = False) -> pd.DataFrame:
@@ -105,7 +107,10 @@ class CalcExcessMortality(SaveFile):
             df = setup[setup_param](df, add_age)
         else:
             df = setup[setup_param](df)
-        df['STD'] = df.loc[:, [2015, 2016, 2017, 2018, 2019]].std(axis=1, ddof=0).round(1)
+
+        years = [2015, 2016, 2017, 2018, 2019]
+
+        df = super().calc_std_dev(df, years)
 
         return df
 

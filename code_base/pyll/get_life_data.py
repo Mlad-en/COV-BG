@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import requests as req
 
-
+from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.pyll.folder_constants import source_WHO_life_data, source_le_countries_data
 from code_base.utils.file_utils import SaveFile
 from code_base.pyll.decode_loc_vars import EU_COUNTRIES_ISO_3_DECODES
@@ -56,93 +56,73 @@ class GetWHOLifeData(SaveFile):
 
 
 class FullLifeExpectancy(SaveFile):
-    """
-    Class only applicable for Bulgaria and Czechia currently. Data for countries is controlled via the
-    LIFE_EXPECTANCY_DATA_PACKAGED bindings.
-    TODO: class needs to be updated due to recent update from NSI which implemented a CloudFlare wall on its website, making scraping the site difficult.
-    """
-    def __init__(self, country: str):
-        self.countries = LIST_LIFE_EXP_DT_COUNTRIES
-        if country not in self.countries:
-            raise TypeError(f'Incorrect country entered. Only acceptable options are: {", ".join(self.countries)}.')
 
+    def __init__(self, country):
+        if country not in ('Bulgaria', 'Czechia'):
+            raise ValueError('Invalid Country selected.')
+        self.country = country
         self.file_loc = source_le_countries_data
-        self.countries: Dict = LIFE_EXPECTANCY_DATA_PACKAGED
-        self.country: str = country
+        super().__init__()
 
     @staticmethod
-    def get_data(country_dt: Dict) -> pd.DataFrame:
-        url = country_dt['url_dict']['main'] + country_dt['url_dict'][country_dt['page_file']][country_dt['pf_name']]
-        request = req.get(url)
-        sheet = country_dt.get('sheet_name', 0)
-        df = pd.read_excel(request.content, sheet_name=sheet)
+    def cz_life_tbls() -> pd.DataFrame:
+        """
+        :return: Returns combined life table data for both sexes for Czechia.
+        """
+        df = pd.DataFrame()
+        # Life tables for Czechia exist as two separate files on the Czech's Statistical Office' website.
+        # The loop below cleans and combines the two files.
+        for values in DECODE_CZ_DT.values():
+            url = values['url_dict']['main']
+            location = values['url_dict'][values['pages_files']][values['pf_name']]
+            full_url_path = url + location
+            df_temp = pd.read_excel(full_url_path, skiprows=2, engine='openpyxl')
+
+            # Keep only Age and Life Expectancy columns
+            df_temp = df_temp[values['keep_cols']]
+            # Translate columns
+            columns = values['rename_cols']
+            df_temp.rename(columns=columns, inplace=True)
+            # Add sex since missing in files.
+            df_temp['Sex'] = values['Sex']
+            # Add to empty Dataframe.
+            df = pd.concat([df, df_temp])
+
         return df
 
     @staticmethod
-    def melt_sex_cols(df: pd.DataFrame, country_dt: Dict) -> pd.DataFrame:
-        df = df
-        sex = country_dt['rename_columns'][1:]
-        df = pd.melt(df, id_vars=['Age'], value_vars=sex, var_name='Sex', value_name='Life_Expectancy')
+    def bg_life_tbls() -> pd.DataFrame:
+        """
+        Function scrapes Infostat - A website by the National Statistics' Office of Bulgaria.
+        The Function then cleans the returned file and returns a DataFrame.
+        :return: DataFrame of Life Expectancy for Bulgaria.
+        """
+        # Scrape data From InfoStat
+        c = DownloadInfostatDT('life_expectancy_by_sex')
+        file = c.fetch_infostat_data()
+        # Move file from Infostat Download Bin to Source File dir.
+        lf_exp = c.rename_and_move_file(file, 'infostat_life_expectancy_by_sex')
+        df = pd.read_excel(lf_exp, sheet_name='Sheet0', engine='openpyxl', skiprows=3, header=0)
+        # Remove bottom empty values
+        df.dropna(how='any', axis=0, inplace=True)
+        # Remove first column as it pertains to distinction between Total, Urban and Non-urban areas -
+        # hence irrelevant to the current level of analysis.
+        df.drop(df.columns[0], axis=1, inplace=True)
+        df.rename(columns={df.columns[0]: 'Age'}, inplace=True)
+        # Replace 100+ with just the number 100.
+        df['Age'] = df['Age'].str.replace('+', '', regex=False)
+        # Convert Total, Male and Female columns into a single one - sex.
+        df = df.melt(id_vars='Age', value_vars=['Total', 'Male', 'Female'], var_name='Sex', value_name='Life_Expectancy')
         return df
 
-    @staticmethod
-    def clean_df_cols_rows(df: pd.DataFrame, country_dt: Dict) -> pd.DataFrame:
+    def get_life_tables(self):
+        country_method = {
+            'Bulgaria': self.bg_life_tbls,
+            'Czechia': self.cz_life_tbls
+        }
 
-        df = df
+        df = country_method[self.country]()
+        file_name = self.country + '_life_expectancy'
+        file_path = self.save_df_to_file(df, source_le_countries_data, file_name=file_name)
 
-        # Filter on applicable columns in files
-        df = df[country_dt['columns']]
-
-        # Limit Data frame to only relevant rows
-        index_start_rows = df.index[df[country_dt['start_index'][0]] == country_dt['start_index'][1]].tolist()
-
-        if country_dt.get('end_index'):
-            index_end_rows = df.index[df[country_dt['end_index'][0]] == country_dt['end_index'][1]].tolist()
-            df = df.iloc[index_start_rows[0] + 1:index_end_rows[0]]
-        else:
-            df = df.iloc[index_start_rows[0] + 1:]
-
-        df.columns = country_dt['rename_columns']
-
-        df.dropna(how='all', axis=0, inplace=True)
-
-        return df
-
-    def build_data(self, country_dt: Dict) -> str:
-
-        df = self.get_data(country_dt=country_dt)
-        df = self.clean_df_cols_rows(df=df, country_dt=country_dt)
-
-        df = self.melt_sex_cols(df=df, country_dt=country_dt)
-
-        df = df.round(2)
-
-        file_loc = self.save_df_to_file(df, self.file_loc, country_dt['lf_ex_clean'])
-        return file_loc
-
-    def merge_files(self, files: List[str]) -> str:
-
-        file_men = files[0]
-        file_women = files[1]
-
-        df_men = pd.read_csv(file_men, converters={'Age': float})
-        df_women = pd.read_csv(file_women, converters={'Age': float})
-
-        dframes = [df_men, df_women]
-        both_sexes = pd.concat(dframes)
-
-        file_name = f'{self.country}_life_expectancy_both_sexes'
-        file_loc = self.save_df_to_file(both_sexes, self.file_loc, file_name)
-
-        return file_loc
-
-    def get_life_tables(self) -> str:
-        country_data = self.countries[self.country]
-        if len(country_data) == 1:
-            return self.build_data(*self.countries[self.country])
-
-        else:
-            files = []
-            for file in country_data:
-                files.append(self.build_data(file))
-            return self.merge_files(files)
+        return file_path

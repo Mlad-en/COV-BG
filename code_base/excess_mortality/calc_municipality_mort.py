@@ -4,6 +4,7 @@ import warnings
 import pandas as pd
 from math import sqrt
 
+from code_base.excess_mortality.base_calc_excess import ExcessMortBase
 from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.excess_mortality.get_pop_cntr import get_bg_mun_pop
@@ -11,12 +12,12 @@ from code_base.excess_mortality.scraping_constants import BG_MUNICIPALITIES, DEC
 from code_base.utils.file_utils import SaveFile
 
 
-class CalcMunMort(SaveFile):
+class CalcMunMort(SaveFile, ExcessMortBase):
     """
     Todo: Inherit from CalcExcessMortality to take advantage of Excess Mortality and P-score calculation functions.
     """
-    def __init__(self):
 
+    def __init__(self):
         self.source_location = source_cov_bg_mun
         self.output_loc = output_excess_mortality_municipalities
         super().__init__()
@@ -53,6 +54,7 @@ class CalcMunMort(SaveFile):
 
         # Backfill values for output_loc to propagate to the sex rows
         new.iloc[:, -1] = new.iloc[:, -1].fillna(method='pad')
+        # new = self.pad_data(new)
 
         # Rename columns accordingly and reorder columns
         new.rename(columns={new.columns[-1]: 'Location', new.columns[0]: 'Sex'}, inplace=True)
@@ -62,6 +64,8 @@ class CalcMunMort(SaveFile):
 
         # Remove any columns with empty values - byproduct of the stack function
         new.dropna(how='any', inplace=True)
+
+        # Translate Sex column values
         sex = {'Жени': 'Female', 'Мъже': 'Male', 'Общо': 'Total'}
         new['Sex'] = new.apply(lambda x: sex.get(x['Sex']), axis=1)
 
@@ -79,33 +83,12 @@ class CalcMunMort(SaveFile):
         # Convert 2015 data to numeric. For some reason it is read as object, instead of int.
         new['2015'] = new['2015'].map(int)
 
-        # Generate Excess mortality and P-Score calculations, including
-        new['STD'] = new.loc[:, ['2015', '2016', '2017', '2018', '2019']].std(axis=1, ddof=0).round(1)
-        new['Z-Score(95%)'] = 1.96
-        new['Conf_interval'] = new.apply(lambda x: x['Z-Score(95%)'] * (x['STD'] / sqrt(5)), axis=1).round(1)
-        new['Mean_Mortality'] = new[['2015', '2016', '2017', '2018', '2019']].mean(axis=1).round(1)
-        new['Lower_bound_Mean_mortality'] = new['Mean_Mortality'] - new['Conf_interval'].round(1)
-        new['Upper_bound_Mean_mortality'] = new['Mean_Mortality'] + new['Conf_interval'].round(1)
-
-        new['Excess_mortality_Mean'] = new.apply(lambda x: x['2020'] - x['Mean_Mortality'], axis=1).round(1)
-        new['Excess_mortality_fluc'] = new.apply(
-            lambda x: abs(x['Excess_mortality_Mean'] - (x['2020'] - x['Lower_bound_Mean_mortality'])), axis=1).round(1)
-
-        new['P_Score'] = new.apply(
-            lambda x: ((x['2020'] - x['Mean_Mortality']) / x['Mean_Mortality']) * 100 if x['Mean_Mortality'] != 0 else 0,
-            axis=1).round(1)
-
-        new['P_score_fluctuation'] = new.apply(
-            lambda x: (x['P_Score'] - (
-                    ((x['2020'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100))
-            if x['Upper_bound_Mean_mortality'] != 0 else 0,
-            axis=1).round(1)
-
-        # Visually represent Mean, Excess Mortality and P-score with their respective confidence intervals
-        new['Mean Mortality ±'] = new['Mean_Mortality'].round(1).map(str) + ' (±' + new['Conf_interval'].map(str) + ')'
-        new['Excess Mortality ±'] = new['Excess_mortality_Mean'].map(str) + ' (±' + new['Excess_mortality_fluc'].map(
-            str) + ')'
-        new['P_score ±'] = new['P_Score'].map(str) + '% (±' + new['P_score_fluctuation'].map(str) + '%)'
+        new = self.calc_std_dev(new, ['2015', '2016', '2017', '2018', '2019'])
+        new = self.add_zscore_con_int(new)
+        new = self.add_mean_mort(new, ['2015', '2016', '2017', '2018', '2019'])
+        new = self.add_excess_mort(new)
+        new = self.add_pscore(new)
+        new = self.add_formatted_attrs(new)
 
         return new
 
@@ -149,13 +132,13 @@ class CalcMunMort(SaveFile):
 
 
 if __name__ == '__main__':
-    # mort_raw = DownloadInfostatDT('mortality_by_age_sex_mun')
-    # file = mort_raw.fetch_infostat_data()
-    # mort_reg = mort_raw.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
-    #
-    # pop = DownloadInfostatDT('population_by_municipality')
-    # file = pop.fetch_infostat_data()
-    # pop_mun = pop.rename_and_move_file(file, 'infostat_population_by_municipality')
+    mort_raw = DownloadInfostatDT('mortality_by_age_sex_mun')
+    file = mort_raw.fetch_infostat_data()
+    mort_reg = mort_raw.rename_and_move_file(file, 'infostat_mortality_by_age_sex_mun')
+
+    pop = DownloadInfostatDT('population_by_municipality')
+    file = pop.fetch_infostat_data()
+    pop_mun = pop.rename_and_move_file(file, 'infostat_population_by_municipality')
 
     mort = CalcMunMort()
     crfs = mort.calc_covid_mort_cfr()
@@ -164,10 +147,10 @@ if __name__ == '__main__':
                          location=mort.output_loc,
                          method='excel')
 
-    # dtfrm = mort.clean_df(mort_reg)
-    #
-    # merge_mort_pop = dtfrm.merge(get_bg_mun_pop(pop_mun), on=['Location', 'Sex', 'Region'])
-    # mort.save_df_to_file(df=merge_mort_pop,
-    #                      file_name='BG_excess_mortality_by_municipality_and_sex_and_pop',
-    #                      location=mort.output_loc,
-    #                      method='excel')
+    dtfrm = mort.clean_df(mort_reg)
+
+    merge_mort_pop = dtfrm.merge(get_bg_mun_pop(pop_mun), on=['Location', 'Sex', 'Region'])
+    mort.save_df_to_file(df=merge_mort_pop,
+                         file_name='BG_excess_mortality_by_municipality_and_sex_and_pop',
+                         location=mort.output_loc,
+                         method='excel')

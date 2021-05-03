@@ -67,6 +67,28 @@ LIFE_EXPECTANCY_DATA = {
     }
 }
 
+
+DECODE_CZ_DT = {'MEN':
+    {
+        'url_dict': CZ_CZSO_URL,
+        'pages_files': 'files',
+        'pf_name': 'life_expectancy_men',
+        'Sex': 'Male',
+        'keep_cols': ['věk (x) age', 'ex'],
+        'rename_cols': {'věk (x) age': 'Age', 'ex': 'Life_Expectancy'},
+    },
+    'WOMEN':
+    {
+        'url_dict': CZ_CZSO_URL,
+        'pages_files': 'files',
+        'pf_name': 'life_expectancy_women',
+        'Sex': 'Female',
+        'keep_cols': ['věk (x) age', 'ex'],
+        'rename_cols': {'věk (x) age': 'Age', 'ex': 'Life_Expectancy'},
+    },
+}
+
+
 LIFE_EXPECTANCY_DATA_PACKAGED = {
     'Bulgaria': [LIFE_EXPECTANCY_DATA['Bulgaria']],
     'Czechia': [
@@ -76,3 +98,5 @@ LIFE_EXPECTANCY_DATA_PACKAGED = {
 }
 
 LIST_LIFE_EXP_DT_COUNTRIES = [country for country in LIFE_EXPECTANCY_DATA_PACKAGED.keys()]
+
+
