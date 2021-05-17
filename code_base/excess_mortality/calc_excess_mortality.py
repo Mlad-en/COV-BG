@@ -1,4 +1,5 @@
 import os
+from http.client import IncompleteRead
 from typing import Callable, Dict, List, Optional, Union
 from functools import cached_property
 
@@ -238,9 +239,14 @@ class CalcExcessMortality(SaveFileMixin):
         :return: The property returns the location of a file that contains information about mortality between weekly and yearly
         periods within the EU.
         """
+        while True:
+            try:
+                data = ExcessMortalityMapper(cntry=self.cntry, years=self.include_years)
+                loc = data.save_clean_mort_data()
+                break
+            except IncompleteRead:
+                continue
 
-        data = ExcessMortalityMapper(cntry=self.cntry, years=self.include_years)
-        loc = data.save_clean_mort_data()
         return loc
 
     @cached_property
@@ -252,7 +258,7 @@ class CalcExcessMortality(SaveFileMixin):
         data = self.filters.filter_weeks_locations(df=data)
         return data
 
-    def filter_demographic_data(self, df, age_range: Optional[List] = None, sexes: Optional[List] = None):
+    def filter_demographic_data(self, df, age_range: Optional[List] = None, sexes: Optional[List] = None) -> pd.DataFrame:
         """
         The method return a dataframe, filtering out demographic groups. Available demographic groups are Sex and Age.
         If None is passed for either parameter, the default behavior will be to filter out everything different than 'Total'
@@ -276,7 +282,7 @@ class CalcExcessMortality(SaveFileMixin):
                          age_range: Optional[List] = None,
                          sexes: Optional[List] = None,
                          is_weekly: bool = False,
-                         is_age_agg: bool = True):
+                         is_age_agg: bool = True) -> pd.DataFrame:
         """
         Method is used to calculate excess mortality for given regions/countries depending on the class' instance'
         cntry attribute - if none is presented, then calculation is done across European countries.
