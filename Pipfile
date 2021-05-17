@@ -18,6 +18,7 @@ xlrd = "*"
 seaborn = "*"
 matplotlib = "*"
 plotly = "*"
+xlsxwriter = "*"
 
 [requires]
 python_version = "3.8"

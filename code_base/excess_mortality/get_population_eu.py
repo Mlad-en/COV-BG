@@ -1,42 +1,42 @@
 from os import path
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 
-from code_base.excess_mortality.eurostat_bulk_base import (GetBulkEurostatDataBase,
-                                                           clean_unneeded_symbols,
-                                                           SaveFile,
+from code_base.excess_mortality.base_eurostat_bulk import (SaveFileMixin,
                                                            UN_LOC_VARS,
                                                            UN_DECODE_AGE_GROUPS,
                                                            UN_DECODE_SEX_GROUPS)
 from code_base.excess_mortality.folder_constants import source_eu_population
+from code_base.excess_mortality.get_excess_mortality import BaseBulkEurostatData
 
 
-class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
+class GetEUPopulation(BaseBulkEurostatData):
     def __init__(self):
         self.eurostat_data = 'europe_population_by_age_and_sex'
         super().__init__(self.eurostat_data, zipped=False)
 
     def clean_up_df(self) -> None:
-        self.split_demographic_data(
-            split_from=self.split_columns['split_from_demo'],
-            split_into=self.split_columns['split_into_demo'],
-            separator=';')
+        super().clean_up_df()
 
-        self.filter_cols(self.retain_demo_columns)
+        # TODO: Add comment explanations to the code.
 
-        self.decode_demo_values()
+        self.eurostat_df.rename(columns={'2020': 'Population'}, inplace=True)
 
-        self.eurostat_df.rename(columns={'2020 ': 'Population'}, inplace=True)
-        remove_missing_vals_mask = self.eurostat_df["Population"].str.contains(":") == False
+        remove_missing_vals_mask = self.eurostat_df['Population'].str.contains(":") == False
         self.eurostat_df = self.eurostat_df[remove_missing_vals_mask]
         self.eurostat_df.dropna(how='any', subset=['Location'], axis=0, inplace=True)
 
-        self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'p', '')
-        self.eurostat_df['Population'] = clean_unneeded_symbols(self.eurostat_df['Population'], 'e', '')
+        self.replace_symbols(symbol_to_replace='p', replace_with='', apply_to_cols=['Population'])
+        self.replace_symbols(symbol_to_replace='e', replace_with='', apply_to_cols=['Population'])
+
         self.eurostat_df['Population'] = self.eurostat_df['Population'].map(int)
 
-    def get_agg_sex_cntry_pop(self, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
+        return
+
+    def get_agg_sex_cntry_pop(self, sex: Optional[List] = None, age: Optional[List] = None) -> pd.DataFrame:
+        sex = ['Total'] if not sex else sex
+        age = ['Total'] if not age else age
         filt_mask = self.eurostat_df['Sex'].isin(sex) & self.eurostat_df['Age'].isin(age)
         df = self.eurostat_df[filt_mask].copy()
         df.drop('Age', axis=1, inplace=True)
@@ -44,7 +44,7 @@ class GetEUPopulation(GetBulkEurostatDataBase, SaveFile):
         return df
 
 
-class GetPopUN(SaveFile):
+class GetPopUN(SaveFileMixin):
     def __init__(self):
         self.file_name = 'UNDATA_Population by age, sex and urban-rural residence_2019.csv'
         self.file_loc = path.join(source_eu_population, self.file_name)

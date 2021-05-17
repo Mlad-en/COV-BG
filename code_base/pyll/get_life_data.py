@@ -6,13 +6,13 @@ import requests as req
 
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.pyll.folder_constants import source_WHO_life_data, source_le_countries_data
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 from code_base.pyll.decode_loc_vars import EU_COUNTRIES_ISO_3_DECODES
 from code_base.pyll.decode_vars import *
 from code_base.pyll.url_constants import WHO_DATA
 
 
-class GetWHOLifeData(SaveFile):
+class GetWHOLifeData(SaveFileMixin):
     def __init__(self):
         self.file_loc = source_WHO_life_data
 
@@ -55,7 +55,7 @@ class GetWHOLifeData(SaveFile):
         return df
 
 
-class FullLifeExpectancy(SaveFile):
+class FullLifeExpectancy(SaveFileMixin):
 
     def __init__(self, country):
         if country not in ('Bulgaria', 'Czechia'):

@@ -1,5 +1,5 @@
 import warnings
-from typing import List
+from typing import List, Optional
 from os import path
 
 import pandas as pd
@@ -10,7 +10,14 @@ from code_base.pyll.folder_constants import source_pop_data
 from code_base.utils.common_query_params import ages_all
 
 
-def get_bg_pop(file: str, sex: List = ['Total'], age: List = ['Total']) -> pd.DataFrame:
+def get_bg_pop(file: str, sex: Optional[List] = None, age: Optional[List] = None, agg_agg: bool = True) -> pd.DataFrame:
+    """
+    :param file: Raw file that contains population data for Bulgaria.
+    :param sex: Filters data by sex variables ['Female', 'Male']. If not given, default will be 'Total'
+    :param age: Filters data by age variables (e.g. ['(30-34)', '(35-39)']. If not given, default will be 'Total'
+    :param agg_agg:
+    :return: Returns a dataframe that contains population data for Bulgaria, filtered for age and sex variables.
+    """
     # Catch and suppress UserWarning from openpyxl about "Workbook contains no default style".
     warnings.simplefilter('ignore', category=UserWarning)
 
@@ -25,6 +32,7 @@ def get_bg_pop(file: str, sex: List = ['Total'], age: List = ['Total']) -> pd.Da
 
     # Normalize Age to other data sets like the Eurostat ones.
     df['Age'] = df.apply(lambda x: INFOSTAT_DECODE_AGE_GROUPS.get(x['Age']), axis=1)
+    df['Location'] = df.apply(lambda x: 'Sofia (stolitsa)' if x['Location'] == 'Sofia-grad' else x['Location'], axis=1)
 
     # Convert the Total, Male and Female columns to rows, and their values transposed to a new column: Population
     df = df.melt(id_vars=['Location', 'Age'], value_vars=['Total', 'Male', 'Female'], var_name='Sex',
@@ -34,13 +42,21 @@ def get_bg_pop(file: str, sex: List = ['Total'], age: List = ['Total']) -> pd.Da
     drop_indexes = df[df['Population'] == '-'].index
     df.drop(drop_indexes, inplace=True)
 
+    # filter age and sex groups
+    sex = sex if sex else ['Total']
+    age = age if age else ['Total']
+
+    df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
+
     # Convert column to integer and sum values. Needed due to the age group mappings - current dataset has age groups like:
     # 90-94, 95-100, 100+. All of these are converted to 90+, hence they need to be summed.
     df['Population'] = df['Population'].map(int)
-    df.groupby(['Location', 'Age', 'Sex'], as_index=False).sum('Population')
 
-    # filter age and sex groups
-    df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
+    if agg_agg:
+        df.drop('Age', axis=1, inplace=True)
+        df = df.groupby(['Location', 'Sex'], as_index=False).sum('Population')
+    else:
+        df = df.groupby(['Location', 'Age', 'Sex'], as_index=False).sum('Population')
 
     return df
 

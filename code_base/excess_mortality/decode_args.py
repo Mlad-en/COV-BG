@@ -12,10 +12,16 @@ DECODE_DEMO_REPL = {
     'europe_population_by_age_and_sex': ['Frequency', 'Unit', 'Sex', 'Age', 'Location']
 }
 
+DECODE_DEMO_SEPARATOR = {
+    'excess_mortality_by_sex_age_country': ',',
+    'excess_mortality_by_sex_age_nuts3': ',',
+    'europe_population_by_age_and_sex': ';'
+}
+
 RETAIN_COLUMNS = {
     'excess_mortality_by_sex_age_country': ['Age', 'Sex', 'Location'],
     'excess_mortality_by_sex_age_nuts3': ['Age', 'Sex', 'Location'],
-    'europe_population_by_age_and_sex': ['2020 ', 'Sex', 'Age', 'Location']
+    'europe_population_by_age_and_sex': ['Age', 'Sex', 'Location', '2020']
 }
 
 COUNTRY_REPLACE = {
@@ -26,9 +32,7 @@ COUNTRY_REPLACE = {
 
 FILE_EXT_TYPE = {
     'csv': '.csv',
-    'latex': '.tex',
     'excel': '.xlsx',
-    'pickle': '.pickle'
 }
 
 EUROSTAT_AGES_CONVERSION = {

@@ -6,10 +6,10 @@ from bs4 import BeautifulSoup
 
 from code_base.official_bg_data.decode_args import *
 from code_base.official_bg_data.url_constants import *
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 
 
-class GetOfficialBGStats(SaveFile):
+class GetOfficialBGStats(SaveFileMixin):
     data_types = {
         'general',
         'by_region',

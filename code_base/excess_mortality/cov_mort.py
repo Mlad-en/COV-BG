@@ -6,10 +6,10 @@ import pandas as pd
 from code_base.excess_mortality.folder_constants import source_cov_mort_cz, source_cov_bg_comb
 from code_base.excess_mortality.url_constants import CZ_COV_URL
 from code_base.pyll.decode_vars import LIST_LIFE_EXP_DT_COUNTRIES
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 
 
-class GetFullCovidMortality(SaveFile):
+class GetFullCovidMortality(SaveFileMixin):
 
     def __init__(self, country):
         self.countries = LIST_LIFE_EXP_DT_COUNTRIES

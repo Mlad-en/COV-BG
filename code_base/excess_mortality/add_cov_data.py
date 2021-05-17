@@ -4,10 +4,10 @@ import pandas as pd
 
 from code_base.excess_mortality.folder_constants import source_cov_bg_comb, output_excess_mortality_regions
 from code_base.official_bg_data.get_official_bg_data import GetOfficialBGStats
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 
 
-class CovMortAttrs(SaveFile):
+class CovMortAttrs(SaveFileMixin):
     """
     Class only used for the Total (all age groups) age-aggregated data for Bulgarian regions.
     Cannot be used with other data sets due to limitations of data.
@@ -29,22 +29,26 @@ class CovMortAttrs(SaveFile):
         testing_df = testing_by_reg.get_by_region_data(year=year, month=month, day=day)
         return testing_df
 
-    def add_exces_official_dt(self, exc_mort_total_loc: str) -> pd.DataFrame:
+    def add_exces_official_dt(self, exc_mort_df: pd.DataFrame) -> pd.DataFrame:
         """
         :param exc_mort_total_loc: The path to the excess mortality dataset for Bulgaria by region.
         :return: Returns a dataframe object with the excess mortality data, including Covid-19 related deaths
         and a Excess to Official Covid-19 deaths ratio.
         """
-        exc_mort = exc_mort_total_loc
-        df = pd.read_excel(exc_mort, sheet_name='Sheet1')
+        new_df = exc_mort_df.merge(self.get_cov_mort_df, on=['Location', 'Sex'])
 
-        new_df = df.merge(self.get_cov_mort_df, on=['Location', 'Sex'])
-
-        new_df['excess/official_mean'] = new_df.apply(lambda x: x['Excess_mortality_Mean'] / x['Covid Mortality'],
+        new_df['excess/official_mean'] = new_df.apply(lambda x:
+                                                      x['Excess_mortality_Mean'] / x['Covid Mortality'],
                                                       axis=1).round(1)
-        new_df['excess/official_fluc'] = new_df.apply(
-            lambda x: ((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['Covid Mortality']) - x[
-                'excess/official_mean'], axis=1).round(1)
+
+        new_df['excess/official_fluc'] = new_df.apply(lambda x:
+                                                      (
+                                                              (x['Excess_mortality_Mean'] + x['Excess_mortality_fluc'])
+                                                       / x['Covid Mortality']
+                                                      )
+                                                      - x['excess/official_mean'],
+                                                      axis=1).round(1)
+
         new_df['excess/official ±'] = new_df['excess/official_mean'].map(str) + ' (±' + new_df['excess/official_fluc'].map(
             str) + ')'
 

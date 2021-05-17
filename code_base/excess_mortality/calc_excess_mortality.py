@@ -1,292 +1,372 @@
-from math import sqrt
-from typing import Optional, List, Dict
+import os
+from typing import Callable, Dict, List, Optional, Union
+from functools import cached_property
 
-import numpy as np
 import pandas as pd
 
 from code_base.excess_mortality.base_calc_excess import ExcessMortBase
-from code_base.excess_mortality.folder_constants import *
+from code_base.excess_mortality.folder_constants import (output_excess_mortality_countries,
+                                                         output_excess_mortality_regions,
+                                                         )
 from code_base.excess_mortality.get_excess_mortality import ExcessMortalityMapper
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 
 
-class CalcExcessMortality(SaveFile, ExcessMortBase):
-
+class FilterMortData:
     def __init__(self,
-                 cntry: str = None,
-                 add_current_year: bool = False,
-                 current_year_weeks: Optional[int] = None):
-        self.cntry = cntry
-        self.add_current_year = add_current_year
-        self.current_year_weeks = current_year_weeks
+                 analyze_year: Union[str, int],
+                 exclude_locations: Optional[List] = None,
+                 from_week: Optional[int] = None,
+                 until_week: Optional[int] = None):
+        self.analyze_year = int(analyze_year)
+        self.exclude_locations = exclude_locations
+        self.from_week = from_week
+        self.until_week = until_week
 
-        self.file_loc = output_excess_mortality_regions if self.cntry else output_excess_mortality_countries
-
-    @property
-    def fetch_data(self) -> str:
-
-        data = ExcessMortalityMapper(cntry=self.cntry,
-                                     add_current_year=self.add_current_year,
-                                     current_year_weeks=self.current_year_weeks)
-        loc = data.generate_data()
-        return loc
-
-    @property
-    def get_mortality_df(self) -> pd.DataFrame:
-        file = self.fetch_data
-        source_df = pd.read_csv(file)
-        return source_df
-
-    @property
-    def get_year_ranges(self) -> str:
-        if self.add_current_year:
-            return f'2020_2021'
-        else:
-            return f'2020'
-
-    @staticmethod
-    def get_age_ranges(age_lst: List) -> str:
-        if len(age_lst) > 1:
-            return f'{age_lst[0]} - {age_lst[-1]}'
-        else:
-            return f'{age_lst[0]}'
-
-    @staticmethod
-    def build_prev_year_mort_base(df: pd.DataFrame,
-                                  week_start: int = 10,
-                                  week_end: int = 53,
-                                  add_age: bool = False) -> pd.DataFrame:
+    def filter_start_week(self, df) -> pd.DataFrame:
         """
-        :param df: Provide a Dataframe object containing weekly mortality.
-        :param week_start: Defines the starting week of the previous year comparison. Default = 10
-        :param week_end: Defines the ending week of the previous year comparison. Default = 53
-        :param add_age:
-        :return: Returns a pivoted version of the provided Dataframe, filtered by year (2015-2019) and weeks.
-        The returned Dataframe includes Mean Mortality.
+        The method is used to filter out weeks less than the from_week property, if provided. Otherwise default value is used:
+        for 2020: week 10 (often considered the start of the Covid-19 pandemic in Europe), for other years: week 1.
+
+        :param df: Dataframe object to be filtered.
+        :return: The method returns a dataframe, excluding weeks less than the from_week property.
         """
-        pivoted = df[(df['Year'] < 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)].copy()
+        default_start = {
+            2020: 10,
+        }
+        gte_week = self.from_week if self.from_week else default_start.get(self.analyze_year, 1)
 
-        if not add_age:
-            pivoted.drop('Age', axis=1, inplace=True)
-            pivoted = pivoted.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-            pivoted = pivoted.pivot(index=['Sex', 'Location', 'Week'], columns='Year', values='Mortality').reset_index()
+        return df.drop(df[df['Week'].lt(gte_week)].index, axis=0)
+
+    def filter_end_week(self, df) -> pd.DataFrame:
+        """
+        The method is used to filter out weeks less than the until_week property, if provided. Otherwise, the last column
+        is used and missing data values are dropped. It is assumed only future weeks are dropped.
+
+        :param df: Dataframe object to be filtered.
+        :return: The method returns a dataframe, excluding weeks greater than the until_week property. If not provided,
+        it drops missing values.
+        """
+        if self.until_week:
+            return df.drop(df[df['Week'].gt(self.until_week)].index, axis=0)
         else:
-            pivoted = pivoted.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-            pivoted = pivoted.pivot(index=['Age', 'Sex', 'Location', 'Week'], columns='Year', values='Mortality').reset_index()
+            return df.dropna(subset=[df.columns[-1]], how='any', axis=0)
 
-        pivoted['Mean_Mortality'] = pivoted[[2015, 2016, 2017, 2018, 2019]].mean(axis=1).round(1)
-
-        return pivoted
+    def filter_out_locations(self, df) -> pd.DataFrame:
+        """
+        :param df: Dataframe object to be filtered.
+        :return: The method returns a dataframe, excluding locations listed in the exclude_locations property.
+        """
+        return df.drop(df[df['Location'].isin(self.exclude_locations)].index, axis=0)
 
     @staticmethod
-    def setup_weekly_std(df: pd.DataFrame) -> pd.DataFrame:
+    def filter_out_blank_dt(df) -> pd.DataFrame:
+        """
+        :param df: Dataframe object to be filtered.
+        :return: The method returns a dataframe, excluding any missing values for the last column - the year to be analysed.
+        """
+        return df.dropna(subset=[df.columns[-1]], how='any', axis=0)
+
+    def filter_weeks_locations(self, df):
+        df = self.filter_start_week(df)
+        df = self.filter_end_week(df)
+        if self.exclude_locations:
+            df = self.filter_out_locations(df)
+        df = self.filter_out_blank_dt(df)
+
+        return df
+
+    @staticmethod
+    def filter_demo_data(df: pd.DataFrame, demo_type: str, demo_range: Optional[List] = None) -> pd.DataFrame:
+        """
+        The method return a dataframe, filtering out sex/age groups NOT specified in the demo_range parameter.
+
+        :param df: Dataframe object to be filtered.
+        :param demo_type: The demographic information type the dataframe needs to be filtered on.
+        :param demo_range: Defines a list of demographic information (e.g. sex - Male, female and/or Total)
+        that need to remain in the dataframe.
+        :return: Returns a dataframe object, filtered by demographic information.
+        """
+        demo_type = demo_type
+        return df.drop(df[~df[demo_type].isin(demo_range)].index, axis=0)
+
+    def filter_all_demo_data(self, df: pd.DataFrame, demo_type_range_dict: Dict) -> pd.DataFrame:
+        """
+        The method return a dataframe, filtering out row data.
+        :param df: Dataframe object to be filtered.
+        :param demo_type_range_dict: A demographic key and range value (list of values) pair that is to remain in the df.
+        :return: Returns a dataframe object, filtered by all demographic information types available.
+        """
+        for demo_type, demo_range in demo_type_range_dict.items():
+            df = self.filter_demo_data(df, demo_type=demo_type, demo_range=demo_range)
+
+        return df
+
+
+class DataInformation:
+    @staticmethod
+    def per_group_info(df: pd.DataFrame):
+        """
+        The method adds information about the week count, minimum week number and maximum week number for each Age-Sex-Location
+        group within a given dataframe. This weekly information is used as meta-data to validate excess mortality calculations.
+
+        :return: The method does not return data. It manipulates the existing dataframe within the class instance.
+        """
+        week_stats = df.groupby(['Age', 'Sex', 'Location'], as_index=False).agg({'Week': ['count', 'min', 'max']})
+        # Joins column headers that are separated by different levels as a result of the aggregation function above, i.e.
+        # ('Week','count') becomes 'Week_count', etc.
+        week_stats.columns = ['_'.join(x) if x[1] else x[0] for x in week_stats.columns]
+        week_stats.drop_duplicates(inplace=True)
+
+        return week_stats.sort_values(by=['Location', 'Sex', 'Age'], ascending=True)
+
+
+class SetUpData:
+    def __init__(self, is_weekly: bool = False, is_age_agg: bool = True):
+        self.is_weekly = is_weekly
+        self.is_age_agg = is_age_agg
+        self.all_demo_values = ('Age', 'Sex', 'Location', 'Week')
+
+    @staticmethod
+    def back_fill_missing_weekly(df: pd.DataFrame) -> pd.DataFrame:
         """For all years which have only 52 weeks, copy mortality for week 52 to week 53.
         This is similar to the way it is handled in https://ourworldindata.org/excess-mortality-covid,
-        where they all together compare data from week 52 for all previous years (Endnote #5)."""
-        df.fillna(method='pad', inplace=True)
-        return df
+        where they all together compare data from week 52 for all previous years (End-note #5)."""
 
-    @staticmethod
-    def setup_yearly_std(df: pd.DataFrame, add_age: bool = False) -> pd.DataFrame:
-        # Remove Weekly column and aggregate weekly mortality.
-        group_params = {
-            True: ['Age', 'Sex', 'Location'],
-            False: ['Sex', 'Location'],
-        }
-        df.drop('Week', axis=1, inplace=True)
-        df = df.groupby(group_params[add_age], as_index=False).sum('Mortality')
+        return df.fillna(method='pad')
 
-        return df
-
-    def add_std(self, df, setup_param: str = 'year', add_age: bool = False) -> pd.DataFrame:
-        setup = {
-            'year': self.setup_yearly_std,
-            'week': self.setup_weekly_std
-        }
-        if add_age and setup_param == 'year':
-            df = setup[setup_param](df, add_age)
-        else:
-            df = setup[setup_param](df)
-
-        years = [2015, 2016, 2017, 2018, 2019]
-
-        df = super().calc_std_dev(df, years)
-
-        return df
-
-    @staticmethod
-    def add_cmn_prev_year_attrs(df: pd.DataFrame) -> pd.DataFrame:
-        df['Z-Score(95%)'] = 1.96
-        df['Conf_interval'] = df.apply(lambda x: x['Z-Score(95%)'] * (x['STD'] / sqrt(5)), axis=1).round(1)
-        df['Lower_bound_Mean_mortality'] = df['Mean_Mortality'] - df['Conf_interval'].round(1)
-        df['Upper_bound_Mean_mortality'] = df['Mean_Mortality'] + df['Conf_interval'].round(1)
-
-        return df
-
-    @staticmethod
-    def build_curr_year_mort_base(df: pd.DataFrame,
-                                  week_start: int = 10,
-                                  week_end: int = 53,
-                                  add_age: bool = False
-                                  ) -> pd.DataFrame:
-        curr_year_mort = df[(df['Year'] >= 2020) &
-                            (
-                                    (df['Year'] == 2020) & (df['Week'] >= week_start) & (df['Week'] <= week_end)
-                            )]
-        if not add_age:
-            c_year_mort_copy = curr_year_mort.copy(deep=True)
-            c_year_mort_copy.drop('Age', axis=1, inplace=True)
-            c_year_mort_copy = c_year_mort_copy.groupby(['Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-        else:
-            c_year_mort_copy = curr_year_mort.copy(deep=True)
-            c_year_mort_copy = c_year_mort_copy.groupby(['Age', 'Sex', 'Location', 'Year', 'Week'], as_index=False).sum('Mortality')
-        return c_year_mort_copy
-
-    @staticmethod
-    def merge_weekly_dfs(curr_year: pd.DataFrame, prev_years: pd.DataFrame, param: str = 'year', add_age: bool = False) -> pd.DataFrame:
-        if not add_age:
-            merge_data_on = {
-                'year': ['Sex', 'Location'],
-                'week': ['Sex', 'Location', 'Week']
-            }
-        else:
-            merge_data_on = {
-                'year': ['Age', 'Sex', 'Location'],
-                'week': ['Age', 'Sex', 'Location', 'Week']
-            }
-
-        if param == 'year':
-            curr_year.drop('Week', axis=1, inplace=True)
-            if not add_age:
-                curr_year = curr_year.groupby(['Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
-            else:
-                curr_year = curr_year.groupby(['Age', 'Sex', 'Location', 'Year'], as_index=False).sum('Mortality')
-
-        curr_year = curr_year.merge(prev_years,
-                                    left_on=merge_data_on[param],
-                                    right_on=merge_data_on[param])
-        return curr_year
-
-    @staticmethod
-    def add_merged_data_attrs(df: pd.DataFrame) -> pd.DataFrame:
-        df['Excess_mortality_Mean'] = df.apply(lambda x: x['Mortality'] - x['Mean_Mortality'], axis=1).round(1)
-        df['Excess_mortality_fluc'] = df.apply(lambda x:
-                                             abs(x['Excess_mortality_Mean'] - (x['Mortality'] - x['Lower_bound_Mean_mortality'])),
-                                             axis=1).round(1)
-        df['P_Score'] = df.apply(
-                lambda x: ((x['Mortality'] - x['Mean_Mortality']) / x['Mean_Mortality']) * 100
-                if x['Mean_Mortality']!=0 else 0,
-                axis=1).round(1)
-        df['P_score_fluctuation'] = df.apply(
-                lambda x: (x['P_Score'] - (
-                            ((x['Mortality'] - x['Upper_bound_Mean_mortality']) / x['Upper_bound_Mean_mortality']) * 100))
-            if x['Upper_bound_Mean_mortality'] !=0
-                else np.nan,
-                axis=1).round(1)
-
-        df['Mean Mortality ±'] = df['Mean_Mortality'].round(1).map(str) + ' (±' + df['Conf_interval'].map(str) + ')'
-        df['Excess Mortality ±'] = df['Excess_mortality_Mean'].map(str) + ' (±' + df['Excess_mortality_fluc'].map(
-            str) + ')'
-        df['P_score ±'] = df['P_Score'].map(str) + '% (±' + df['P_score_fluctuation'].map(str) + '%)'
-        return df
-
-    @staticmethod
-    def calc_std_pop_excess_mortality(mortality_df, pop_df):
-        exc_mort_std: pd.DataFrame = mortality_df.merge(pop_df[['Sex', 'Location', 'Population']],
-                                                        left_on=['Sex', 'Location'],
-                                                        right_on=['Sex', 'Location']).copy()
-
-        exc_mort_std['Excess_mortality_per_10^5'] = exc_mort_std.apply(
-            lambda x: x['Excess_mortality_Mean'] / x['Population'] * 10 ** 5, axis=1).round(1)
-
-        exc_mort_std['Excess_mortality_per_10^5_fluc'] = exc_mort_std.apply(
-            lambda x: abs(((x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) / x['Population'] * 10 ** 5) - x[
-                'Excess_mortality_per_10^5']), axis=1).round(1)
-
-        exc_mort_std['Excess_mortality_per_10^5_±'] = \
-            exc_mort_std['Excess_mortality_per_10^5'].map(str) \
-            + '(±' + \
-            exc_mort_std['Excess_mortality_per_10^5_fluc'].map(str) \
-            + ')'
-
-        return exc_mort_std
-
-    def calc_excess_mortality(self,
-                              df: pd.DataFrame,
-                              weekly: bool = False,
-                              add_age: bool = False) -> pd.DataFrame:
-        time_params = {
-            False: 'year',
-            True: 'week'
-        }
-        time_param = time_params[weekly]
-
-        prev_years = self.build_prev_year_mort_base(df, add_age=add_age)
-        prev_years = self.add_std(prev_years, time_param, add_age=add_age)
-        prev_years = self.add_cmn_prev_year_attrs(prev_years)
-
-        curr_year = self.build_curr_year_mort_base(df=df, add_age=add_age)
-        merged: pd.DataFrame = self.merge_weekly_dfs(curr_year=curr_year,
-                                                     prev_years=prev_years,
-                                                     param=time_param,
-                                                     add_age=add_age)
-        merged: pd.DataFrame = self.add_merged_data_attrs(merged)
-
-        return merged
-
-    def clean_eu_data(self, df, exclude_cntrs: Optional[List] = ['']):
-        year = 2021 if self.add_current_year else 2020
-        week = self.current_year_weeks if self.add_current_year else 53
-
-        filt_mask = ((df['Year'] == year)
-                     & (df['Week'] == week)
-                     & (df['Mortality'].notnull())
-                     & ~(df['Location'].isin(exclude_cntrs)))
-        countries_w_uptodate_data = df[filt_mask].loc[:, 'Location'].drop_duplicates().to_list()
-
-        df = df[df['Location'].isin(countries_w_uptodate_data)]
-
-        return df
-
-    def excess_mortality_to_file(self,
-                                 mortality_df: pd.DataFrame,
-                                 pop_df: pd.DataFrame,
-                                 sex: List = ['Total'],
-                                 age: List = ['Total'],
-                                 exclude_cntrs: Optional[List] = ['']) -> Dict:
+    def dec_mean_mort_calc(self, func) -> Callable:
         """
-        :param mortality_df: Add reference to the get_mortality_df attribute.
-        :param pop_df: Population for the given region/countries.
-        :param age: Specifies the list of age ranges included in the report (e.g. ['(10-14)', '(15-19)', '(20-24)', 'Total'])
-        :param sex: Specifies the list of sexes included in the report (e.g. [Male, Female, Total]).
-        :param exclude_cntrs: a List of countries that require an exclusion from the Dataset.
-        :return: Function returns a dictionary of the file output_loc of the per week deaths (key: weekly_deaths)
-        and total deaths (key: total_deaths)
+        Decorator method is used to set up mean mortality and sum values around it, depending on grouping parameters.
+        :param func: Receives the mean mortality function.
+        :return: Returns inner function reference.
         """
-        df = mortality_df
-        df = df[(df['Age'].isin(age)) & (df['Sex'].isin(sex))]
 
-        if not self.cntry:
-            df = self.clean_eu_data(df, exclude_cntrs=exclude_cntrs)
+        def inner(df, *args) -> pd.DataFrame:
+            """
+            The grouping parameters can be Age and/or Week depending on the class instance' properties: is_weekly and
+            is_age_agg.
+            If is_weekly is True, Weekly values are padded when data is missing - e.g. in the cases where a year has 52 weeks,
+            instead of 53. In this such cases week 53 for this year is padded by the value from the previous week - 52. All
+            data is then averaged across base years
+            If is_weekly is False, a mean value is derived for the amount of existing data points - i.e. if data is present
+            for a single base year for mean mortality then only it will be used to calculate the mean mortality for this
+            period.
+            Once mean mortality is calculated, it can be summed up across Age and/or Week  for is_weekly and is_age_agg
+            values respectively.
+            :param df: Dataframe object to be modified with Mean Mortality.
+            :param args: Mean Mortality function required parameters.
+            :return: Returns a dataframe object that has been modified to include mean mortality and aggregated depending
+            on class instance' values.
+            """
+            group_all_values = [val for val in self.all_demo_values]
+            exclude_params = []
 
-        country = f'{self.cntry}_' if self.cntry else 'EUROPE_'
-        age_f = self.get_age_ranges(age)
+            if self.is_weekly:
+                df = self.back_fill_missing_weekly(df=df)
 
-        total_file_name = f'TOTAL_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
-        total_deaths = self.calc_excess_mortality(df)
-        total_deaths_std = self.calc_std_pop_excess_mortality(total_deaths, pop_df)
-        # total_deaths_std = total_deaths
-        total_deaths_file = self.save_df_to_file(total_deaths_std, self.file_loc, total_file_name, method='excel')
+            df = func(df, *args)
 
-        weekly_file_name = f'WEEKLY_{country}{age_f}_{sex}_excess_mortality_{self.get_year_ranges}'
-        weekly_deaths = self.calc_excess_mortality(df, weekly=True)
-        weekly_deaths_std = self.calc_std_pop_excess_mortality(weekly_deaths, pop_df)
-        # weekly_deaths_std = weekly_deaths
-        weekly_deaths_file = self.save_df_to_file(weekly_deaths_std, self.file_loc, weekly_file_name, method='excel')
+            if self.is_age_agg:
+                exclude_params.append('Age')
 
-        file_locs = {
-            'total': total_deaths_file,
-            'weekly': weekly_deaths_file
+            if not self.is_weekly:
+                exclude_params.append('Week')
+
+            group_values = [val for val in group_all_values if val not in exclude_params]
+
+            df = df.drop(exclude_params, axis=1)
+            df = df.groupby(group_values, as_index=False).sum()
+
+            return df
+
+        return inner
+
+
+class CalcExcessMortality(SaveFileMixin):
+
+    def __init__(self,
+                 analyze_year: int,
+                 from_week: int = None,
+                 until_week: int = None,
+                 cntry: str = None,
+                 exclude_locations: Optional[List] = None):
+        self.analyze_year = int(analyze_year)
+        self.cntry = cntry
+        self.data_info = None
+        self.file_loc_base = output_excess_mortality_regions if self.cntry else output_excess_mortality_countries
+        self.file_loc = os.path.join(self.file_loc_base, str(self.analyze_year))
+
+        self.filters = FilterMortData(analyze_year=analyze_year,
+                                      from_week=from_week,
+                                      until_week=until_week,
+                                      exclude_locations=exclude_locations)
+
+        self.exc_mort_calcs = ExcessMortBase(analyze_year=analyze_year)
+
+        super().__init__()
+
+    @property
+    def base_compare_years(self):
+        """
+        :return: Property used to return a list of years that analyzed year mortality is compared to. They provide the
+        mean ranges over which excess mortality can be calculated. For the purposes of this project these are the last
+        five years prior to the pandemic.
+        """
+        return [year for year in range(2015, 2019 + 1)]
+
+    @property
+    def include_years(self):
+        """
+        :return: Property returns a list of years to be included from the EU mortality's database.
+        The period 2015-2019 is always included.
+        The list is then supplemented with the analyze_year property of the given class instance.
+        """
+        always_included = [year for year in self.base_compare_years]
+        always_included.append(self.analyze_year)
+
+        return always_included
+
+    @property
+    def fetch_data_loc(self) -> str:
+        """
+        Property calls class that makes an API call to the Eurostat's Bulk data service for the period 2015-2019 and the
+        analyze_year property for the given class instance (e.g. 2020).
+        Depending on whether a particular country is being analyzed or all countries in the EU, the class proceeds accordingly.
+        Finally, the dataframe is cleaned and saved locally. The property returns the file's location.
+
+        :return: The property returns the location of a file that contains information about mortality between weekly and yearly
+        periods within the EU.
+        """
+
+        data = ExcessMortalityMapper(cntry=self.cntry, years=self.include_years)
+        loc = data.save_clean_mort_data()
+        return loc
+
+    @cached_property
+    def mortality_df(self):
+        """
+        :return: Property reads file returned from the fetch_data_loc property and returns a dataframe object of its contents.
+        """
+        data = pd.read_csv(self.fetch_data_loc, encoding='utf-8-sig')
+        data = self.filters.filter_weeks_locations(df=data)
+        return data
+
+    def filter_demographic_data(self, df, age_range: Optional[List] = None, sexes: Optional[List] = None):
+        """
+        The method return a dataframe, filtering out demographic groups. Available demographic groups are Sex and Age.
+        If None is passed for either parameter, the default behavior will be to filter out everything different than 'Total'
+        :param df: dataframe object to be filtered.
+        :param age_range: A list of age ranges to remain in the dataframe (e.g. ['(40-44)', '(45-49)'])
+        :param sexes: A list of sex groups to remain in the dataframe (e.g. ['Male', 'Female'])
+        :return: Returns a dataframe, filtering out demographic groups.
+        """
+        age_range = age_range if age_range else ['Total']
+        sexes = sexes if sexes else ['Total']
+        demo_ranges = {
+            'Age': age_range,
+            'Sex': sexes
         }
 
-        return file_locs
+        df = self.filters.filter_all_demo_data(df=df, demo_type_range_dict=demo_ranges)
+
+        return df
+
+    def calc_excess_mort(self,
+                         age_range: Optional[List] = None,
+                         sexes: Optional[List] = None,
+                         is_weekly: bool = False,
+                         is_age_agg: bool = True):
+        """
+        Method is used to calculate excess mortality for given regions/countries depending on the class' instance'
+        cntry attribute - if none is presented, then calculation is done across European countries.
+        If present, then calculation is done across country' NUTS regions.
+        The analysis includes comparison between a base mortality avarage (2015-2019) against the analyze_year attribute
+        for the class instance (e.g. 2020).
+        :param age_range: Range of age groups to be included in analysis - e.g. ['(40-44)', '(45-49)'] will only include
+        age groups between 40 and 49. If not provided, It will default to 'Total'
+        :param sexes: Range of sex groups to be included in analysis - e.g. ['Male', 'Female'] will only include
+        sex groups Male and Female. If not provided, It will default to 'Total'.
+        :param is_weekly: Describes whether data should be aggregated across weeks or should be presented in a per week format.
+        :param is_age_agg: Describes whether data should be aggregated across age groups
+        or should be presented in a per age group format.
+        :return: Returns a dataframe object that contains excess mortality calculations e.g.:
+        confidence intervals, mean mortality, excess mortality, p-scores and formatted columns for
+        mean mortality (mean mortality ± confidence intervals),
+        excess mortality (excess mortality ± confidence intervals),
+        p-scores (p-scores ± confidence intervals).
+        """
+
+        mortality_df = self.filter_demographic_data(df=self.mortality_df, age_range=age_range, sexes=sexes)
+
+        # Add information about the data used to generate calculations following filtration.
+        # Particularly useful for 2021 where information between different countries/regions is not provided at the same time.
+        # Used as both a sanity check and source verification.
+        self.data_info = DataInformation().per_group_info(df=mortality_df)
+
+        set_up = SetUpData(is_weekly=is_weekly, is_age_agg=is_age_agg)
+
+        @set_up.dec_mean_mort_calc
+        def add_mean_mort(df, years):
+            return self.exc_mort_calcs.add_mean_mort(df, years)
+
+        mortality_df = add_mean_mort(mortality_df, [str(year) for year in self.base_compare_years])
+        mortality_df = self.exc_mort_calcs.add_exc_mort_info(mortality_df,
+                                                             [str(year) for year in self.base_compare_years],
+                                                             False)
+
+        return mortality_df
+
+    @staticmethod
+    def df_for_multisheet_save(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+        """
+        The method is used to set up a dataframe object to be saved into different sheets in the same excel file.
+        :param df: Dataframe object that needs to be split into multiple dataframes.
+        :return: Returns a dictionary mapping between the sheet_name and dataframe objects.
+        """
+        dfs_dct = {sheet_name: data for sheet_name, data in df.groupby(['Sex'])}
+        return dfs_dct
+
+    def set_up_df_for_multisheet_save(self, df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+        """
+        Splits up dataframe into a dictionary of dataframe objects that can be saved into multiple sheets in the same excel
+        spreadsheet. Method also adds meta data about the information used to generate the output data and saves it in a
+        new sheet called Data_Used.
+        :param df: Dataframe object that needs to be split into multiple dataframes.
+        :return: Returns a dictionary mapping between the sheet_name and dataframe objects with additional meta information.
+        """
+        data = self.df_for_multisheet_save(df=df)
+        if self.data_info is not None:
+            data['Data_Used'] = self.data_info
+        return data
+
+    def get_file_naming_convention(self,
+                                   age_lst: Optional[List] = None,
+                                   sex: Optional[List] = None,
+                                   weekly: bool = False,
+                                   age_agg: bool = True) -> str:
+        """
+        Method generates the file naming convention for output files generated by the calc_excess_mort method of the class.
+        :param age_lst: The age range used for the calc_excess_mort calculation.
+        :param sex: The sex groups used for the calc_excess_mort calculation.
+        :param weekly: Whether calculations are aggregated across weeks or are per week.
+        :param age_agg: Whether calculations are aggregated across age groups or are per age groups.
+        :return: Returns a string containing the resulting file name.
+        """
+        year = self.analyze_year
+
+        time_period = 'WEEKLY' if weekly else 'TOTAL'
+        cntry = self.cntry if self.cntry else 'EU'
+        sex = f'{sex}' if sex else f'(SEX-TOTAL)'
+        age_agg = 'AGE_AGGREGATED' if age_agg else 'BY_AGE_GROUP'
+
+        if age_lst and len(age_lst) > 1:
+            age = f'{age_lst[0]} - {age_lst[-1]}'
+        elif age_lst:
+            age = f'{age_lst[0]}'
+        else:
+            age = f'(AGE-TOTAL)'
+
+        file_name = f'{year}_{age_agg}_{time_period}_{cntry}_{sex}_{age}'
+
+        return file_name

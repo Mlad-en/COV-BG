@@ -9,10 +9,10 @@ from code_base.excess_mortality.folder_constants import *
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.excess_mortality.get_pop_cntr import get_bg_mun_pop
 from code_base.excess_mortality.scraping_constants import BG_MUNICIPALITIES, DECODE_REGION
-from code_base.utils.file_utils import SaveFile
+from code_base.utils.file_utils import SaveFileMixin
 
 
-class CalcMunMort(SaveFile, ExcessMortBase):
+class CalcMunMort(SaveFileMixin, ExcessMortBase):
     """
     Todo: Inherit from CalcExcessMortality to take advantage of Excess Mortality and P-score calculation functions.
     """
@@ -21,6 +21,10 @@ class CalcMunMort(SaveFile, ExcessMortBase):
         self.source_location = source_cov_bg_mun
         self.output_loc = output_excess_mortality_municipalities
         super().__init__()
+
+    @property
+    def base_compare_years(self):
+        return ['2015', '2016', '2017', '2018', '2019']
 
     @staticmethod
     def read_file(fl) -> pd.DataFrame:
@@ -83,12 +87,7 @@ class CalcMunMort(SaveFile, ExcessMortBase):
         # Convert 2015 data to numeric. For some reason it is read as object, instead of int.
         new['2015'] = new['2015'].map(int)
 
-        new = self.calc_std_dev(new, ['2015', '2016', '2017', '2018', '2019'])
-        new = self.add_zscore_con_int(new)
-        new = self.add_mean_mort(new, ['2015', '2016', '2017', '2018', '2019'])
-        new = self.add_excess_mort(new)
-        new = self.add_pscore(new)
-        new = self.add_formatted_attrs(new)
+        new = self.add_exc_mort_info(new, self.base_compare_years)
 
         return new
 
@@ -103,9 +102,9 @@ class CalcMunMort(SaveFile, ExcessMortBase):
         columns = {df.columns[0]: 'Location',
                    df.columns[1]: 'Diagnosed_Home_Treatment',
                    df.columns[2]: 'Hospitalized',
-                   df.columns[3]: 'Total Cases',
+                   df.columns[3]: 'Positive Cases',
                    df.columns[4]: 'Recovered',
-                   df.columns[5]: 'Deaths'}
+                   df.columns[5]: 'Covid Mortality'}
         df.rename(columns=columns, inplace=True)
 
         # Remove 'Municipality' from the text of the Location column
@@ -123,7 +122,7 @@ class CalcMunMort(SaveFile, ExcessMortBase):
         df = df[cols].copy(deep=True)
 
         # Calculate Case Fatality Ratio (CFR)
-        df['CFR'] = df.apply(lambda x: (x['Deaths'] / x['Total Cases']) * 100, axis=1).round(2)
+        df['CFR'] = df.apply(lambda x: (x['Covid Mortality'] / x['Positive Cases']) * 100, axis=1).round(2)
 
         # Sort Data by CFR descending
         df.sort_values(by='CFR', ascending=False, inplace=True)

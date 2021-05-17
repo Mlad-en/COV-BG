@@ -1,6 +1,6 @@
 from datetime import date
 from os import path
-from typing import List
+from typing import List, Dict
 
 import pandas as pd
 
@@ -22,7 +22,7 @@ def generate_past_week_years(start_year: int, end_year: int) -> List:
     """Function is used to generate the
     :param start_year: Start interval for week generation.
     :param end_year: End interval for week generation (inclusive).
-    :return: Returns a list of all weeks for the given interval in the format: ['2020W52', '2020W53', '2021W01']
+    :return: Returns a list of all weeks for the given interval in the format: ['2020W52 ', '2020W53 ', '2021W01 ']
     """
     week_year = []
     years = [year for year in range(start_year, end_year+1)]
@@ -37,34 +37,24 @@ def generate_current_year_weeks(num_weeks: int) -> List:
     return curr_year
 
 
-def get_years_to_compare(df_year, compare_years):
-    if compare_years:
-        return compare_years
-    else:
-        start_range = df_year - 5
-        end_range = df_year - 1
-        return [start_range, end_range]
-
-
 def clean_unneeded_symbols(df: pd.DataFrame, symbol_to_replace: str, replace_with: str) -> pd.DataFrame:
     return df.replace(symbol_to_replace, replace_with, regex=True)
 
 
-class SaveFile:
+class SaveFileMixin:
     def __init__(self):
         pass
 
     @staticmethod
-    def save_df_to_file(df: pd.DataFrame, location, file_name: str, method: str = 'csv', sheet_name: str ='Sheet1') -> str:
+    def generate_file_path(location: str, file_name: str, method: str) -> str:
         """
-
-        :param df: DataFrame object that needs to be saved.
-        :param location: The output_loc where the DataFrame needs to be saved.
-        :param file_name: The file name of the saved file.
-        :param method: The file type - by default it's 'csv'. Others are excel, pickle and latex.
-        :return: Returns the absolute path to the saved file.
+        Method generates an absolute file path.
+        :param location: Location of the file that is to be generated.
+        :param file_name: The name of the file to be created.
+        :param method: The type of application that needs to be reading this file - e.g. csv, excel. This will return the
+        appropriate application extension.
+        :return: Returns an absolute file path string.
         """
-
         file_type = FILE_EXT_TYPE.get(method)
         if not file_type:
             raise ValueError('Incorrect Save DF method called.')
@@ -72,14 +62,48 @@ class SaveFile:
         file_name += file_type
         file_path = path.join(location, file_name)
 
+        return file_path
+
+    def save_df_to_file(self,
+                        df: pd.DataFrame,
+                        location: str,
+                        file_name: str,
+                        method: str = 'csv',
+                        sheet_name: str = 'Sheet1') -> str:
+        """
+
+        :param df: DataFrame object that needs to be saved.
+        :param location: The output_loc where the DataFrame needs to be saved.
+        :param file_name: The file name of the saved file.
+        :param sheet_name: Default sheetname for files.
+        :param method: The file type - by default it's 'csv'. Others are excel, pickle and latex.
+        :return: Returns the absolute path to the saved file.
+        """
+
+        file_path = self.generate_file_path(location=location, file_name=file_name, method=method)
+
         if method == 'csv':
             df.to_csv(file_path, index=False, encoding='utf-8-sig')
         if method == 'excel':
-            df.to_excel(file_path, index=False, encoding='utf-8-sig', sheet_name=sheet_name)
-        # TODO: Implement other save df methods
-        if method == 'latex':
-            raise ValueError('Method NOT yet implemented')
-        if method == 'pickle':
-            raise ValueError('Method NOT yet implemented')
+            df.to_excel(file_path, sheet_name=sheet_name, index=False, encoding='utf-8-sig')
+
+        return file_path
+
+    def save_multisheet_xlsx(self,
+                             dfs: Dict[str, pd.DataFrame],
+                             location: str,
+                             file_name: str) -> str:
+        """
+
+        :param dfs:
+        :param location:
+        :param file_name:
+        :return:
+        """
+        file_path = self.generate_file_path(location=location, file_name=file_name, method='excel')
+
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            for sheet_name, datafrm in dfs.items():
+                datafrm.to_excel(writer, sheet_name=sheet_name, index=False, encoding='utf-8-sig')
 
         return file_path
