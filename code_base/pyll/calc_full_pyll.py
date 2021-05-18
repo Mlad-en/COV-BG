@@ -58,7 +58,7 @@ class MergeMortalityLifeExpectancy(SaveFileMixin):
         cov_mort_lf = cov_mort.merge(lf_ex, how='inner', on=['Age', 'Sex']).sort_values(by='Date')
 
         age = 'all ages' if start_age == 0 and end_age == 150 else f'from {start_age} to {end_age}'
-        filename = f'{self.country} - RAW {mode}({age})'
+        filename = f'{self.country} - RAW {mode}({age})_from_{start_date}_to_{end_date}'
         directory = self.directory[self.country]
 
         file_path = self.save_df_to_file(df=cov_mort_lf, file_name=filename, location=directory)
@@ -81,7 +81,7 @@ class MergeMortalityLifeExpectancy(SaveFileMixin):
                                                             AVG_YLL=('Life_Expectancy', 'mean')).round(2)
 
         age = 'all ages' if start_age == 0 and end_age == 150 else f'from {start_age} to {end_age}'
-        filename = f'{self.country} - CALCULATED {mode}({age})'
+        filename = f'{self.country} - CALCULATED {mode}({age})_from_{start_date}_to_{end_date}'
         directory = self.directory[self.country]
 
         file_path = self.save_df_to_file(df=cntr_pyll, location=directory, file_name=filename)

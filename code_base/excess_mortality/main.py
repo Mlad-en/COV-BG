@@ -6,9 +6,7 @@ from code_base.excess_mortality.get_population_eu import GetEUPopulation, GetPop
 from code_base.utils.common_query_params import *
 
 if __name__ == '__main__':
-    from datetime import datetime
-
-    start_time = datetime.now()
+    # TODO: turn into class functions, potentially decorate class to loop.
 
     # Scrape Infostat for Population Data to load the population for Bulgaria
     c = DownloadInfostatDT('bg_pop_by_age_sex_reg')
@@ -97,6 +95,3 @@ if __name__ == '__main__':
             eu_mortality.save_multisheet_xlsx(dfs=mort_data_and_info,
                                               location=eu_mortality.file_loc,
                                               file_name=file_name)
-
-    end_time = datetime.now()
-    print(end_time - start_time)

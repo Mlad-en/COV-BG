@@ -2,7 +2,6 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-import requests as req
 
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.pyll.folder_constants import source_WHO_life_data, source_le_countries_data
@@ -113,6 +112,7 @@ class FullLifeExpectancy(SaveFileMixin):
         df['Age'] = df['Age'].str.replace('+', '', regex=False)
         # Convert Total, Male and Female columns into a single one - sex.
         df = df.melt(id_vars='Age', value_vars=['Total', 'Male', 'Female'], var_name='Sex', value_name='Life_Expectancy')
+
         return df
 
     def get_life_tables(self):

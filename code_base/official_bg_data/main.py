@@ -22,7 +22,7 @@ if __name__ == '__main__':
     bg_mort.generate_per_person_mort_dt(bg_mort_raw_file, dct)
 
     dct = {'start_date': (2021, 1, 1),
-           'end_date': (2021, 4, 3)}
+           'end_date': (2021, 5, 18)}
     bg_mort = GetBGMort()
     bg_mort_raw_file = bg_mort.save_raw_mh_articles(dct)
     bg_mort.generate_per_person_mort_dt(bg_mort_raw_file, dct)
