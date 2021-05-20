@@ -10,7 +10,7 @@ from code_base.excess_mortality.get_pop_cntr import get_itl_pop
 from code_base.pyll.url_constants import FED_INFO_SYS
 from code_base.pyll.folder_constants import output_pyll_eu, source_std_eu_2013_pop_data
 from code_base.pyll.get_life_data import GetWHOLifeData
-from code_base.utils.common_query_params import exclude_cntrs, sex, ages_0_89, age_15_64, age_85_89, ages_0_84, ages_all
+from code_base.utils.common_query_params import sex, ages_0_89, age_15_64, age_85_89, ages_0_84, ages_all
 from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
 from code_base.utils.file_utils import SaveFileMixin
@@ -18,18 +18,28 @@ from code_base.utils.file_utils import SaveFileMixin
 
 class CalcExcessMortYLL(SaveFileMixin):
 
-    def __init__(self, over_90_included: bool = False, static_lf_over_90: bool = False):
+    def __init__(self, over_90_included: bool = False,
+                 static_lf_over_90: bool = False,
+                 exclude_cntrs: Optional[List] = None,
+                 analyze_year: int = 2020,
+                 from_week: int = 10,
+                 until_week: int = 53):
         self.file_location = output_pyll_eu
         self.over_90_included = over_90_included
         self.static_lf_over_90 = static_lf_over_90
+        self.exclude_cntrs = exclude_cntrs
+        self.analyze_year = analyze_year
+        self.from_week = from_week
+        self.until_week = until_week
 
     @property
     def get_excess_mortality(self) -> pd.DataFrame:
-        eu_mortality = CalcExcessMortality()
-        mortality = eu_mortality.get_mortality_df
-        exc_mort = eu_mortality.calc_excess_mortality(eu_mortality.clean_eu_data(mortality, exclude_cntrs),
-                                                      add_age=True)
-
+        eu_mortality = CalcExcessMortality(exclude_locations=self.exclude_cntrs,
+                                           analyze_year=self.analyze_year,
+                                           from_week=self.from_week,
+                                           until_week=self.until_week)
+        exc_mort = eu_mortality.calc_excess_mort(is_age_agg=False,
+                                                 sexes=sex)
         relevant_cols = ['Age', 'Sex', 'Location', 'Excess_mortality_Mean', 'Excess_mortality_fluc']
         exc_mort.drop(columns=[col for col in exc_mort if col not in relevant_cols], inplace=True)
 
@@ -80,7 +90,7 @@ class CalcExcessMortYLL(SaveFileMixin):
             group_vals = ['Sex', 'Location']
             drop_age = True
 
-        if mode == 'full':
+        elif mode == 'full':
             results = eu.eurostat_df
             group_vals = ['Sex', 'Age', 'Location']
             drop_age = False

@@ -11,6 +11,7 @@ class CovMortAttrs(SaveFileMixin):
     """
     Class only used for the Total (all age groups) age-aggregated data for Bulgarian regions.
     Cannot be used with other data sets due to limitations of data.
+    Can only be used until the 31st DEC 2020.
     """
     def __init__(self):
         self.cov_mort_file_loc = source_cov_bg_comb
@@ -29,9 +30,9 @@ class CovMortAttrs(SaveFileMixin):
         testing_df = testing_by_reg.get_by_region_data(year=year, month=month, day=day)
         return testing_df
 
-    def add_exces_official_dt(self, exc_mort_df: pd.DataFrame) -> pd.DataFrame:
+    def add_excess_official_dt(self, exc_mort_df: pd.DataFrame) -> pd.DataFrame:
         """
-        :param exc_mort_total_loc: The path to the excess mortality dataset for Bulgaria by region.
+        :param exc_mort_df: The path to the excess mortality dataset for Bulgaria by region.
         :return: Returns a dataframe object with the excess mortality data, including Covid-19 related deaths
         and a Excess to Official Covid-19 deaths ratio.
         """

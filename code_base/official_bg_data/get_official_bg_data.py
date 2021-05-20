@@ -87,7 +87,7 @@ class GetOfficialBGStats(SaveFileMixin):
             axis=1).round(1)
 
         pop_url = EUROSTAT_POPULATION['main'] + EUROSTAT_POPULATION['api']['population']
-        population = pd.read_csv(pop_url)['2020 '].values[0]
+        population = pd.read_csv(pop_url)['2020'].values[0]
         df1['Population'] = population
         df1['Population_to_Test'] = df1.apply(lambda x: x['Tests_Done_24h'] / x['Population'] * 100, axis=1).round(1)
 
