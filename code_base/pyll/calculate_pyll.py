@@ -7,10 +7,9 @@ import pandas as pd
 from code_base.excess_mortality.calc_excess_mortality import CalcExcessMortality
 from code_base.excess_mortality.decode_args import std_eu_pop_2013_decode_age
 from code_base.excess_mortality.get_pop_cntr import get_itl_pop
-from code_base.pyll.url_constants import FED_INFO_SYS
 from code_base.pyll.folder_constants import output_pyll_eu, source_std_eu_2013_pop_data
 from code_base.pyll.get_life_data import GetWHOLifeData
-from code_base.utils.common_query_params import sex, ages_0_89, age_15_64, age_85_89, ages_0_84, ages_all
+from code_base.utils.common_query_params import sex, ages_0_89, age_15_64, ages_all
 from code_base.excess_mortality.get_population_eu import GetPopUN, GetEUPopulation
 
 from code_base.utils.file_utils import SaveFileMixin
@@ -39,7 +38,8 @@ class CalcExcessMortYLL(SaveFileMixin):
                                            from_week=self.from_week,
                                            until_week=self.until_week)
         exc_mort = eu_mortality.calc_excess_mort(is_age_agg=False,
-                                                 sexes=sex)
+                                                 sexes=sex,
+                                                 age_range=ages_all)
         relevant_cols = ['Age', 'Sex', 'Location', 'Excess_mortality_Mean', 'Excess_mortality_fluc']
         exc_mort.drop(columns=[col for col in exc_mort if col not in relevant_cols], inplace=True)
 
