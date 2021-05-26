@@ -23,6 +23,15 @@ class CalcExcessMortYLL(SaveFileMixin):
                  analyze_year: int = 2020,
                  from_week: int = 10,
                  until_week: int = 53):
+        """
+
+        :param over_90_included:
+        :param static_lf_over_90:
+        :param exclude_cntrs:
+        :param analyze_year:
+        :param from_week:
+        :param until_week:
+        """
         self.file_location = output_pyll_eu
         self.over_90_included = over_90_included
         self.static_lf_over_90 = static_lf_over_90
@@ -33,6 +42,10 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @property
     def get_excess_mortality(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
         eu_mortality = CalcExcessMortality(exclude_locations=self.exclude_cntrs,
                                            analyze_year=self.analyze_year,
                                            from_week=self.from_week,
@@ -47,6 +60,11 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @property
     def get_life_exp_eu(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
+
         # While loop used since there are intermittent issues with data collection from Eurostat with this particular dataset.
         while True:
             try:
@@ -56,10 +74,16 @@ class CalcExcessMortYLL(SaveFileMixin):
                 break
             except IncompleteRead:
                 continue
+
         return df
 
     @property
     def gen_working_years(self) -> pd.DataFrame:
+        """
+
+        :return:
+        """
+
         working_years = {
             'Age': ['(15-19)', '(20-24)', '(25-29)', '(30-34)', '(35-39)', '(40-44)', '(45-49)', '(50-54)', '(55-59)',
                     '(60-64)'],
@@ -70,6 +94,13 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def get_pop_data(age_groups: List, sex_groups: List, mode: str = 'agg') -> pd.DataFrame:
+        """
+
+        :param age_groups:
+        :param sex_groups:
+        :param mode:
+        :return:
+        """
 
         if mode not in ('agg', 'full'):
             raise TypeError('Incorrect Mode argument selected. Choices are "agg" and "full"')
@@ -113,10 +144,24 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def merge_frames(df1, df2, merge_on):
+        """
+
+        :param df1:
+        :param df2:
+        :param merge_on:
+        :return:
+        """
+
         return df1.merge(df2, on=merge_on)
 
     @staticmethod
     def agg_exc_mort_yll(df, mode: str = 'PYLL'):
+        """
+
+        :param df:
+        :param mode:
+        :return:
+        """
         agg_params = {'Excess_mortality_Mean': 'sum',
                       'Excess_mortality_fluc': 'sum',
                       f'{mode}_mean': 'sum',
@@ -125,6 +170,13 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def add_mean_yll(df, mode: str = 'PYLL'):
+        """
+
+        :param df:
+        :param mode:
+        :return:
+        """
+
         year_comp = 'Life_Expectancy' if mode == 'PYLL' else 'Working_Years_Left_Mean'
         df[f'{mode}_mean'] = df.apply(
             lambda x: x[year_comp] * x['Excess_mortality_Mean'] if x['Excess_mortality_Mean'] > 0 else 0,
@@ -139,6 +191,13 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def add_avg_yll(df, mode: str = 'PYLL'):
+        """
+
+        :param df:
+        :param mode:
+        :return:
+        """
+
         df[f'{mode}_AVG_MEAN'] = df.apply(lambda x: x[f'{mode}_mean'] / x['Excess_mortality_Mean'], axis=1).round(2)
         df[f'{mode}_AVG_FLUC'] = df.apply(lambda x: abs(
             (x[f'{mode}_mean'] + x[f'{mode}_fluc']) / (x['Excess_mortality_Mean'] + x['Excess_mortality_fluc']) - x[
@@ -147,6 +206,13 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def add_std_mean_yll(df, mode: str = 'PYLL'):
+        """
+
+        :param df:
+        :param mode:
+        :return:
+        """
+
         df[f'{mode}_STD_MEAN'] = df.apply(lambda x: (x[f'{mode}_mean'] / x['Population']) * 10 ** 5, axis=1).round(1)
         df[f'{mode}_STD_FLUC'] = df.apply(lambda x: (x[f'{mode}_fluc'] / x['Population']) * 10 ** 5, axis=1).round(1)
 
@@ -154,6 +220,12 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def merge_mean_fluc_cols(df, mode: str = 'PYLL'):
+        """
+
+        :param df:
+        :param mode:
+        :return:
+        """
         df[f'{mode}_mean ±'] = df[f'{mode}_mean'].round(1).map(str) + ' (±' + df[f'{mode}_fluc'].round(1).map(str) + ')'
         df[f'AVG_{mode} ±'] = df[f'{mode}_AVG_MEAN'].map(str) + ' (±' + df[f'{mode}_AVG_FLUC'].map(str) + ')'
         df[f'{mode}_STD ±'] = df[f'{mode}_STD_MEAN'].map(str) + ' (±' + df[f'{mode}_STD_FLUC'].map(str) + ')'
@@ -161,7 +233,13 @@ class CalcExcessMortYLL(SaveFileMixin):
         return df
 
     def calculate_yll_all_ages(self, ages: Optional[List] = None, sexes: List = sex, mode: str = 'PYLL'):
+        """
 
+        :param ages:
+        :param sexes:
+        :param mode:
+        :return:
+        """
         if mode == 'PYLL':
             ages = ages_0_89 if not ages else ages
             merge_on_lf_exc_mort = ['Age', 'Sex', 'Location']
@@ -193,6 +271,10 @@ class CalcExcessMortYLL(SaveFileMixin):
 
     @staticmethod
     def get_std_eu_pop_2013():
+        """
+
+        :return:
+        """
         # Todo: add info about static file used instead of FED_INFO_SYS
         file = 'Standard populations - Federal Health Monitoring.csv'
         file_path = path.join(source_std_eu_2013_pop_data, file)
@@ -204,7 +286,22 @@ class CalcExcessMortYLL(SaveFileMixin):
         df = df.groupby(['Age', 'Sex'], as_index=False).sum('Standard population of Europe 2013 Info')
         return df
 
-    def calculate_asyr(self, ages: Optional[List] = None, sexes: List = sex):
+    def calculate_asyr(self, ages: Optional[List] = None, sexes: List = sex) -> pd.DataFrame:
+        """
+        Function is used to calculate ASYR (Age-Standardized Years of Life Lost Rate) as described in
+        https://academic.oup.com/ije/article/48/4/1367/5281229?login=true.
+        Limitation of function: due to the data provided by the WHO for life expectancy (data goes up to 85+)
+        and the fact that data about mortality provided by Eurostat goes up to 90+, the two data sets are of unequal length.
+        To account for this, calculations have been split - it could either count:
+        1. Include the 90+ group for the analysis. If included, then two options are present:
+        1.1. Assign the same life expectancy to the group.
+        1.2. Provide a static value.
+        2. Exclude the 90+ group and perform calculations from ages 0 to 89, where the 85+ life expectancy from WHO
+        is applied to the 85-89 age group from Eurostat's mortality data - this is the default behavior of the function.
+        :param ages: If age groups are not specified then then age groups analyzed is from ages 0 to 89.
+        :param sexes: If sex group is not specified then the function will analyze it through all available groups (Male, Female, Total).
+        :return: Returns a dataframe object containing ASYR calculations based on a standardized population.
+        """
 
         ages = ages_0_89 if not ages else ages
         yll_ages = self.get_life_exp_eu
@@ -226,6 +323,11 @@ class CalcExcessMortYLL(SaveFileMixin):
         yll_dt['PYLL_Rate_fluc'] = yll_dt.apply(lambda x: (x['PYLL_fluc'] / x['Population']) * 10 ** 5, axis=1).round(2)
 
         # If calculating only under 90+ years, then since the weight of the group is 1000, it should be 100,000 - 1000
+        # This is based on the "Standard populations used for age standardization in the information system of the
+        # Federal Health Monitoring. Classification: age, sex, type of standard population" dataset provided by
+        # The Information System of the Federal Health Monitoring, Germany.
+        # They attribute 1000 people as the standard population per 10^5 people in Europe.
+        # If the 90+ group is excluded then, 1000 people must be subtracted from the standard population.
         division_pop = 99_000 if not self.over_90_included else 100_000
 
         yll_dt['Pop_per_100000'] = yll_dt.apply(lambda x:
@@ -238,6 +340,20 @@ class CalcExcessMortYLL(SaveFileMixin):
                       'ASYR_FLUC': 'sum', }
         return yll_dt.groupby(['Location', 'Sex'], as_index=False).agg(agg_params)
 
-    def gen_file_name(self, age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL', more_info: str = ''):
+    def gen_file_name(self, age: List = ages_0_89, sex: List = sex, mode: str = 'PYLL', more_info: str = '') -> str:
+        """
+        Purpose of function is to generate file name which is product of the class'
+        :param age: The groups that are included in the analysis.
+        If a single age group is selected, then it will display only that age group (e.g. ['40-44']
+        If multiple groups are selected, depending on whether the class is generated with the over_90 age group included:
+        If included: then All_age_groups is displayed.
+        If NOT included: then the first and last groups are listed (e.g. age: ['40-44','45-49', '50-54'] then it will display
+        '(40-44) - (50-54)'
+        :param sex: The sex groups included in the file analysis (e.g. Female and/or Male and/or Total)
+        :param mode: The type of analysis that is the product of the file - PYLL, WYLL, ASYR, etc.
+        :param more_info: Additional notes about the data used to produce the file.
+        :return: Returns a string used to name files generated by the class' output in the following format:
+        EU_<PYLL (default)|ASYR|WYLL>_<AGE_GROUP(s)>_<SEX_GROUPS>[ADDITIONAL_INFORMATION: optional]
+        """
         age = age if len(age) == 1 else 'All_age_groups' if self.over_90_included else f'{age[0]}-{age[-1]}'
         return f'EU_{mode}_{age}_{sex}{more_info}'
