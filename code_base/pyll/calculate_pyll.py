@@ -17,7 +17,7 @@ from code_base.utils.file_utils import SaveFileMixin
 
 
 class CalcExcessMortYLL(SaveFileMixin):
-
+    # TODO: Add explainer text.
     def __init__(self, over_90_included: bool = False,
                  static_lf_over_90: bool = False,
                  exclude_cntrs: Optional[List] = None,

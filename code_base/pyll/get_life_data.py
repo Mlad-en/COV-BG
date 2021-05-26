@@ -1,7 +1,9 @@
 from typing import Dict, List
 
+from io import StringIO
 import numpy as np
 import pandas as pd
+import requests
 
 from code_base.excess_mortality.get_infostat_dt import DownloadInfostatDT
 from code_base.pyll.folder_constants import source_WHO_life_data, source_le_countries_data
@@ -25,7 +27,9 @@ class GetWHOLifeData(SaveFileMixin):
         life_tables = life_tables.replace('###REGION###', location).replace('###YEAR###', year)
         url = WHO_DATA['main'] + life_tables
 
-        df = pd.read_csv(url, encoding='utf-8-sig')
+        req = requests.get(url)
+        data = StringIO(req.text)
+        df = pd.read_csv(data, encoding='utf-8-sig')
 
         drop_columns = ['GHO', 'PUBLISHSTATE', 'REGION',
                         'WORLDBANKINCOMEGROUP', 'Display Value',
