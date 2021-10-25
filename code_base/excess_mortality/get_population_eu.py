@@ -17,6 +17,7 @@ class GetEUPopulation(BaseBulkEurostatData):
         super().__init__(self.eurostat_data, zipped=False)
 
     def clean_up_df(self) -> None:
+        self.eurostat_df.columns = [col.rstrip() for col in self.eurostat_df.columns]
         super().clean_up_df()
 
         # TODO: Add comment explanations to the code.

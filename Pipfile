@@ -19,6 +19,7 @@ seaborn = "*"
 matplotlib = "*"
 plotly = "*"
 xlsxwriter = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.8"
