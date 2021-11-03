@@ -30,7 +30,7 @@ class EurostatParams:
 
     GROUP_DATA_BY_MORTALITY = {
         'all': GroupByAgeSexLocationWeek,
-        'slw': GroupByAgeSexLocation,
-        'asl': GroupBySexLocationWeek,
+        'asl': GroupByAgeSexLocation,
+        'slw': GroupBySexLocationWeek,
         'sl': GroupBySexLocation,
     }

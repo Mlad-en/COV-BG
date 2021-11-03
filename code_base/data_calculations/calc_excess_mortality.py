@@ -39,7 +39,6 @@ class CalculateEurostatExcessMortality:
         :param years:
         :return:
         """
-        print(self.df[years].mean(axis=1))
         self.df[COL_HEAD.MEAN_MORTALITY] = self.df[years].mean(axis=1).round(1)
 
     def _add_mean_mort_boundaries(self):

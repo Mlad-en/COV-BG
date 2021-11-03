@@ -26,7 +26,6 @@ def get_excess_mortality_eurostat(data_type,
                                                      end_week,
                                                      group_by)
 
-    wrangle_data.to_csv(r'C:\Users\mmladenov\Desktop\Althea\test_wrangled.csv', encoding='utf-8-sig', index=False)
     excess_mortality = CalculateEurostatExcessMortality(wrangle_data).calculate_excess_mortality(compare_years,
                                                                                                  analyze_year)
 
@@ -42,4 +41,6 @@ if __name__ == '__main__':
                                          age_groups=['Total'],
                                          sex_groups=['Total'],
                                          start_week=10,
-                                         analyze_years=years)
+                                         analyze_years=years,
+                                         group_by='slw')
+
