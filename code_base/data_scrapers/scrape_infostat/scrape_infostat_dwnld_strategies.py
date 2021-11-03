@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 
 from code_base.data_scrapers.scrape_infostat.scrape_infostat_page_objects import *
 from code_base.data_scrapers.utils import PageObjectActions
-from code_base.data_translation_bindings.sex_translations import INFOSTAT_BG_SEX_BINDINGS, SEX_BINDINGS
 
 
 class BaseRequestStrategyInfostat(ABC):
@@ -61,21 +60,16 @@ class RequestStrategyInfostatBulgarian(BaseRequestStrategyInfostat):
 
     def request_data(self):
         super().filter_first_page()
+
         time.sleep(2)
+
         self.page_actions.click_all_similar_elements(UNCHECK_NUTS2_REGIONS['locator_type'],
                                                      UNCHECK_NUTS2_REGIONS['objs'])
-        time.sleep(2)
-        super().go_to_results_page()
 
-        elements = [
-            {'locator_type': FIND_TEXT['locator_type'],
-             'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.FEMALE)
-             },
-            {'locator_type': FIND_TEXT['locator_type'],
-             'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.MALE)
-             },
-        ]
-        self.page_actions.wait_for_elements(elements, 20)
+        time.sleep(2)
+
+        super().go_to_results_page()
+        self.page_actions.wait_for_elements(WAIT_FOR_DEMO_ELEMENTS_BG, 20)
 
 
 class RequestStrategyInfostatEnglish(BaseRequestStrategyInfostat):
@@ -88,16 +82,9 @@ class RequestStrategyInfostatEnglish(BaseRequestStrategyInfostat):
 
     def request_data(self):
         self.page_actions.find_and_click_element(SWITCH_TO_ENGLISH['locator_type'], SWITCH_TO_ENGLISH['obj'])
+
         time.sleep(5)
+
         super().filter_first_page()
         super().go_to_results_page()
-
-        elements = [
-            {'locator_type': FIND_TEXT['locator_type'],
-             'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', SEX_BINDINGS.FEMALE)
-             },
-            {'locator_type': FIND_TEXT['locator_type'],
-             'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', SEX_BINDINGS.MALE)
-             },
-        ]
-        self.page_actions.wait_for_elements(elements, 20)
+        self.page_actions.wait_for_elements(WAIT_FOR_DEMO_ELEMENTS_EN, 20)

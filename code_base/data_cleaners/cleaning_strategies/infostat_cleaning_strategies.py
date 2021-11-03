@@ -6,8 +6,8 @@ import pandas as pd
 from code_base.data_cleaners.cleaning_params.infostat_params import InfostatHeaders
 from code_base.data_cleaners.utilities.column_operations import split_columns_by_data
 from code_base.data_cleaners.utilities.translate_values import decode_val
-from code_base.data_translation_bindings.BG_municipalities_translations import BG_MUNS_BGR_TO_ENG
-from code_base.data_translation_bindings.age_group_translations import INFOSTAT_DECODE_AGE_GROUPS
+from code_base.data_bindings.BG_municipalities_translations import BG_MUNS_BGR_TO_ENG
+from code_base.data_bindings.age_group_translations import INFOSTAT_DECODE_AGE_GROUPS
 
 
 class BaseInfostatCleaningStrategy(ABC):

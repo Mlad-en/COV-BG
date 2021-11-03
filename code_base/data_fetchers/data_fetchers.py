@@ -15,7 +15,7 @@ class FetchData(ABC):
 
 class FetchEuroStatData(FetchData):
 
-    def __init__(self, eurostat_data_type: str):
+    def __init__(self, eurostat_data_type):
         self.file_info = EurostatFileInfo(eurostat_data_type)
         self.csv_params = self.file_info.csv_params
         self.url = self.file_info.file_url

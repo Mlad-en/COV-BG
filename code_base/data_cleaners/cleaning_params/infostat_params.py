@@ -1,5 +1,5 @@
-from code_base.data_translation_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as HEADERS
-from code_base.data_translation_bindings.sex_translations import SEX_BINDINGS as SEXES, INFOSTAT_BG_SEX_BINDINGS
+from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as HEADERS
+from code_base.data_bindings.sex_translations import SEX_BINDINGS as SEXES, INFOSTAT_BG_SEX_BINDINGS
 
 
 class InfostatHeaders:
@@ -26,8 +26,8 @@ class InfostatHeaders:
 
 class InfostatParams:
 
-    @property
-    def cols_pop_by_age_sex_reg(self):
+    @staticmethod
+    def cols_pop_by_age_sex_reg():
         cols = {
             ind + 1: val for ind, val in enumerate([InfostatHeaders.LOCATION,
                                                     InfostatHeaders.AGE,
@@ -37,8 +37,8 @@ class InfostatParams:
         }
         return cols
 
-    @property
-    def cols_avg_life_expectancy_by_sex(self):
+    @staticmethod
+    def cols_avg_life_expectancy_by_sex():
         cols = {
             ind: val for ind, val in enumerate([InfostatHeaders.LOCATION,
                                                 InfostatHeaders.TOTAL,
@@ -47,8 +47,8 @@ class InfostatParams:
         }
         return cols
 
-    @property
-    def cols_life_expectancy_by_sex(self):
+    @staticmethod
+    def cols_life_expectancy_by_sex():
         cols = {
             ind + 1: val for ind, val in enumerate([InfostatHeaders.AGE,
                                                     InfostatHeaders.TOTAL,
@@ -57,8 +57,8 @@ class InfostatParams:
         }
         return cols
 
-    @property
-    def cols_mortality_by_age_sex_mun(self):
+    @staticmethod
+    def cols_mortality_by_age_sex_mun():
         years = range(2015, 2021)
         demography = (InfostatHeaders.TOTAL, InfostatHeaders.MALE, InfostatHeaders.FEMALE)
 
@@ -69,8 +69,8 @@ class InfostatParams:
 
         return cols
 
-    @property
-    def cols_population_by_municipality(self):
+    @staticmethod
+    def cols_population_by_municipality():
         cols = {
             ind: val for ind, val in enumerate([InfostatHeaders.LOCATION,
                                                 InfostatHeaders.TOTAL,

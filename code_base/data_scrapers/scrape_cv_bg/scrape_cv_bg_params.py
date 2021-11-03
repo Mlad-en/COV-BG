@@ -76,7 +76,7 @@ CV_BG_DISTRIBUTION_BY_REGION = {
 
 CV_BG_DISTRIBUTION_BY_AGE = {
     'Дата': 'Date',
-    '0 - 1' '(0-1)'
+    '0 - 1': '(0-1)',
     '1 - 5': '(1-5)',
     '6 - 9': '(6-9)',
     '10 - 14': '(10-14)',

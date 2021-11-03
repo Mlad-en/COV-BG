@@ -33,7 +33,7 @@ class FilterMortData:
         :return: The method returns a dataframe, excluding weeks less than the from_week property.
         """
         default_start = {
-            2020: 42,
+            2020: 10,
         }
         gte_week = self.from_week if self.from_week else default_start.get(self.analyze_year, 1)
 

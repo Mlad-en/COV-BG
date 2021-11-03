@@ -1,32 +1,34 @@
+from code_base.data_bindings.data_types import EurostatDataSets as DtTp
 from code_base.data_cleaners.cleaning_params.eurostat_cleaning_params import EurostatCleaningParams
-from code_base.data_cleaners.cleaning_strategies.eurostat_data_cleaning_strategies import (EurostatExcessMortalityCleaningStrategy,
-                                                                                           EurostatRegionExcessMortalityCleaningStrategy,
-                                                                                           EurostatEUPopulationCleaningStrategy)
+from code_base.data_cleaners.cleaning_strategies.eurostat_data_cleaning_strategies \
+    import (EurostatExcessMortalityCleaningStrategy,
+            EurostatRegionExcessMortalityCleaningStrategy,
+            EurostatEUPopulationCleaningStrategy)
 
 
 class EurostatCleaningConfig:
     AVAILABLE_DATASETS = {
-        'excess_mortality_by_sex_age_country',
-        'excess_mortality_by_sex_age_nuts3',
-        'europe_population_by_age_and_sex',
+        DtTp.MORTALITY_BY_SEX_AGE_COUNTRY,
+        DtTp.MORTALITY_BY_SEX_AGE_REGION,
+        DtTp.POP_BY_SEX_AGE_COUNTRY,
     }
 
     CLEANING_STRATEGIES = {
-        'excess_mortality_by_sex_age_country': EurostatExcessMortalityCleaningStrategy,
-        'excess_mortality_by_sex_age_nuts3': EurostatRegionExcessMortalityCleaningStrategy,
-        'europe_population_by_age_and_sex': EurostatEUPopulationCleaningStrategy,
+        DtTp.MORTALITY_BY_SEX_AGE_COUNTRY: EurostatExcessMortalityCleaningStrategy,
+        DtTp.MORTALITY_BY_SEX_AGE_REGION: EurostatRegionExcessMortalityCleaningStrategy,
+        DtTp.POP_BY_SEX_AGE_COUNTRY: EurostatEUPopulationCleaningStrategy,
     }
 
     REPLACE_VALUES = {
-        'excess_mortality_by_sex_age_country': [EurostatCleaningParams.REPLACE_VALUES[0],
-                                                EurostatCleaningParams.REPLACE_VALUES[1]],
+        DtTp.MORTALITY_BY_SEX_AGE_COUNTRY: [EurostatCleaningParams.REPLACE_VALUES[0],
+                                            EurostatCleaningParams.REPLACE_VALUES[1]],
 
-        'excess_mortality_by_sex_age_nuts3': [EurostatCleaningParams.REPLACE_VALUES[0],
-                                              EurostatCleaningParams.REPLACE_VALUES[1]],
+        DtTp.MORTALITY_BY_SEX_AGE_REGION: [EurostatCleaningParams.REPLACE_VALUES[0],
+                                           EurostatCleaningParams.REPLACE_VALUES[1]],
 
-        'europe_population_by_age_and_sex': [EurostatCleaningParams.REPLACE_VALUES[0],
-                                             EurostatCleaningParams.REPLACE_VALUES[1],
-                                             EurostatCleaningParams.REPLACE_VALUES[2]],
+        DtTp.POP_BY_SEX_AGE_COUNTRY: [EurostatCleaningParams.REPLACE_VALUES[0],
+                                      EurostatCleaningParams.REPLACE_VALUES[1],
+                                      EurostatCleaningParams.REPLACE_VALUES[2]],
     }
 
     SHARED_CLEANING_PARAMS = {
@@ -46,9 +48,6 @@ class EurostatCleaningConfig:
 class EurostatCleaningInfo:
 
     def __init__(self, data_type):
-        if data_type not in EurostatCleaningConfig.AVAILABLE_DATASETS:
-            available_datasets = ', '.join(EurostatCleaningConfig.AVAILABLE_DATASETS)
-            raise ValueError(f'Incorrect infostat file type selected. Available file types: {available_datasets}')
 
         self._data_type = data_type
 

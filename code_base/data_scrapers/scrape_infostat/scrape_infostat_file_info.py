@@ -1,7 +1,13 @@
+from code_base.data_bindings.data_types import InfostatDataSets as DtTp
 from code_base.data_scrapers.scrape_infostat.scrape_infostat_dwnld_strategies import (RequestStrategyInfostatBulgarian,
                                                                                       RequestStrategyInfostatEnglish)
 from code_base.data_scrapers.scrape_infostat.scrape_infostat_filters import *
 
+# POP_BY_SEX_AGE_REG = auto()
+# AVG_LIFE_EXPECTANCY_BY_SEX = auto()
+# LIFE_EXPECTANCY_BY_SEX = auto()
+# MORTALITY_BY_SEX_AGE_REG = auto()
+# POP_BY_MUNICIPALITY = auto()
 
 class InfostatFiles:
     """
@@ -11,35 +17,35 @@ class InfostatFiles:
     URL = 'https://infostat.nsi.bg'
 
     PAGES = {
-        'bg_pop_by_age_sex_reg': '/infostat/pages/reports/query.jsf?x_2=1168',
-        'mortality_by_age_sex_mun': '/infostat/pages/reports/query.jsf?x_2=1033',
-        'avg_life_expectancy_by_sex': '/infostat/pages/reports/query.jsf?x_2=41',
-        'life_expectancy_by_sex': '/infostat/pages/reports/query.jsf?x_2=230',
-        'population_by_municipality': '/infostat/pages/reports/query.jsf?x_2=1062'
+        DtTp.POP_BY_SEX_AGE_REG: '/infostat/pages/reports/query.jsf?x_2=1168',
+        DtTp.MORTALITY_BY_SEX_AGE_MUN: '/infostat/pages/reports/query.jsf?x_2=1033',
+        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: '/infostat/pages/reports/query.jsf?x_2=41',
+        DtTp.LIFE_EXPECTANCY_BY_SEX: '/infostat/pages/reports/query.jsf?x_2=230',
+        DtTp.POP_BY_MUNICIPALITY: '/infostat/pages/reports/query.jsf?x_2=1062'
     }
 
     LANGUAGES = {
-        'bg_pop_by_age_sex_reg': 'en',
-        'avg_life_expectancy_by_sex': 'en',
-        'life_expectancy_by_sex': 'en',
-        'mortality_by_age_sex_mun': 'bg',
-        'population_by_municipality': 'bg'
+        DtTp.POP_BY_SEX_AGE_REG: 'en',
+        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: 'en',
+        DtTp.LIFE_EXPECTANCY_BY_SEX: 'en',
+        DtTp.MORTALITY_BY_SEX_AGE_MUN: 'bg',
+        DtTp.POP_BY_MUNICIPALITY: 'bg'
     }
 
     FILE_FILTER_TYPES = {
-        'bg_pop_by_age_sex_reg': ExcludePopulationByAgeSexRegionFilters,
-        'avg_life_expectancy_by_sex': ExcludeAverageLifeExpectancyBySexFilters,
-        'life_expectancy_by_sex': ExcludeLifeExpectancyBySexFilters,
-        'population_by_municipality': ExcludePopulationByMunicipalityFilters,
-        'mortality_by_age_sex_mun': ExcludeMortalityByAgeSexMunicipalityFilters,
+        DtTp.POP_BY_SEX_AGE_REG: ExcludePopulationByAgeSexRegionFilters,
+        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: ExcludeAverageLifeExpectancyBySexFilters,
+        DtTp.LIFE_EXPECTANCY_BY_SEX: ExcludeLifeExpectancyBySexFilters,
+        DtTp.POP_BY_MUNICIPALITY: ExcludePopulationByMunicipalityFilters,
+        DtTp.MORTALITY_BY_SEX_AGE_MUN: ExcludeMortalityByAgeSexMunicipalityFilters,
     }
 
     REQUEST_STRATEGIES = {
-        'bg_pop_by_age_sex_reg': RequestStrategyInfostatEnglish,
-        'avg_life_expectancy_by_sex': RequestStrategyInfostatEnglish,
-        'life_expectancy_by_sex': RequestStrategyInfostatEnglish,
-        'mortality_by_age_sex_mun': RequestStrategyInfostatBulgarian,
-        'population_by_municipality': RequestStrategyInfostatBulgarian
+        DtTp.POP_BY_SEX_AGE_REG: RequestStrategyInfostatEnglish,
+        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: RequestStrategyInfostatEnglish,
+        DtTp.LIFE_EXPECTANCY_BY_SEX: RequestStrategyInfostatEnglish,
+        DtTp.MORTALITY_BY_SEX_AGE_MUN: RequestStrategyInfostatBulgarian,
+        DtTp.POP_BY_MUNICIPALITY: RequestStrategyInfostatBulgarian
     }
 
 

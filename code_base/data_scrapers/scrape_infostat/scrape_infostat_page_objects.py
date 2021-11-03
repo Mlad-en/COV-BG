@@ -1,3 +1,5 @@
+from code_base.data_bindings.sex_translations import INFOSTAT_BG_SEX_BINDINGS, SEX_BINDINGS
+
 DECODE_BUTTONS = {
     'request': {
         'en': 'Send',
@@ -48,3 +50,21 @@ FIND_TEXT = {
         'locator_type': 'xpath',
         'obj': '//*[text()="REPLACE_TEXT"]',
     }
+
+WAIT_FOR_DEMO_ELEMENTS_BG = [
+    {'locator_type': FIND_TEXT['locator_type'],
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.FEMALE)
+     },
+    {'locator_type': FIND_TEXT['locator_type'],
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.MALE)
+     },
+]
+
+WAIT_FOR_DEMO_ELEMENTS_EN = [
+    {'locator_type': FIND_TEXT['locator_type'],
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', SEX_BINDINGS.FEMALE)
+     },
+    {'locator_type': FIND_TEXT['locator_type'],
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', SEX_BINDINGS.MALE)
+     },
+]
