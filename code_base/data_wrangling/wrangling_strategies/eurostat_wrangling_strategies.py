@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+import pandas as pd
+
 from code_base.data_wrangling.filters.filter_specifications import *
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
 
@@ -18,7 +20,7 @@ class GroupData(ABC):
 class GroupByAgeSexLocationWeek(GroupData):
 
     def group_data(self):
-        self.df.fillna(method='pad', axis=1, inplace=True)
+        self.df.fillna(method='pad', inplace=True)
         return self.df.groupby([COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION, COL_HEAD.WEEK], as_index=False).sum()
 
 
@@ -47,14 +49,17 @@ class GroupBySexLocation(GroupData):
 class WranglingStrategyBase(ABC):
 
     @abstractmethod
-    def prepare_data(self) -> pd.DataFrame:
+    def filter_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        pass
+
+    @abstractmethod
+    def group_data(self, data: pd.DataFrame) -> pd.DataFrame:
         pass
 
 
 class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
 
     def __init__(self,
-                 data: pd.DataFrame,
                  age: List,
                  sex: List,
                  location: List,
@@ -63,7 +68,6 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
                  end_week: int,
                  years: List[str],):
 
-        self.data = data
         self.age = age
         self.sex = sex
         self.location = location
@@ -83,15 +87,21 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
 
         return AndSpecification(*args)
 
-    def prepare_data(self) -> pd.DataFrame:
-        self.data[COL_HEAD.WEEK] = self.data.loc[:, COL_HEAD.WEEK].astype(int, errors='raise')
-        wrangled_data = FilterData(self._specifications).filter_out_data(self.data)
-        wrangled_data[self.years] = wrangled_data.loc[:, self.years].astype('float64', errors='ignore')
-        wrangled_data = self.group_by(wrangled_data).group_data()
-        return wrangled_data
+    def filter_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        data[COL_HEAD.WEEK] = data.loc[:, COL_HEAD.WEEK].astype(int, errors='raise')
+        data = FilterData(self._specifications).filter_out_data(data)
+        data[self.years] = data.loc[:, self.years].astype('float64', errors='ignore')
+        return data
+
+    def group_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = self.group_by(data).group_data()
+        return data
 
 
 class EurostatEUPopulationWranglingStrategy(WranglingStrategyBase):
 
-    def prepare_data(self) -> pd.DataFrame:
+    def filter_data(self) -> pd.DataFrame:
+        pass
+
+    def group_data(self) -> pd.DataFrame:
         pass

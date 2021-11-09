@@ -33,7 +33,7 @@ class CalculateEurostatExcessMortality:
             lambda x: x[COL_HEAD.Z_SCORE] * (x[COL_HEAD.STANDARD_DEVIATION] / sqrt(5)),
             axis=1).round(1)
 
-    def _add_mean_mort(self, years: List):
+    def add_mean_mort(self, years: List):
         """
 
         :param years:
@@ -108,7 +108,6 @@ class CalculateEurostatExcessMortality:
     def _calculate_non_dec_excess_mortality(self, compare_years: List, analyze_year: str):
         self._calc_std_dev(compare_years)
         self._add_zscore_con_int()
-        self._add_mean_mort(compare_years)
         self._add_mean_mort_boundaries()
         self._add_excess_mort(analyze_year)
         self._add_pscore(analyze_year)
