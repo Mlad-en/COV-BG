@@ -50,7 +50,7 @@ class WeekEndSpecification(Specification):
         self.week_end = week_end
 
     def is_satisfied(self, df) -> List:
-        return list(df[df[COL_HEAD.WEEK].gte(self.week_end)].index)
+        return list(df[df[COL_HEAD.WEEK].gt(self.week_end)].index)
 
 
 class WeekRangeSpecification(Specification):

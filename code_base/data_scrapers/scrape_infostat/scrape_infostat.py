@@ -24,12 +24,12 @@ class ScrapeRawInfostatData:
         file_language = self.file_info.file_language
         file_filters = self.file_info.file_filters
 
-        browser = launch_browser(url, headless=headless_browser)
-        page_actions = PageObjectActions(browser)
+        with launch_browser(url, headless=headless_browser) as browser:
+            page_actions = PageObjectActions(browser)
 
-        request_strategy = self.file_info.request_strategy(page_actions, file_language, file_filters, url)
-        request_strategy.request_data()
+            request_strategy = self.file_info.request_strategy(page_actions, file_language, file_filters, url)
+            request_strategy.request_data()
 
-        dfs = pd.read_html(browser.page_source)
+            dfs = pd.read_html(browser.page_source)
 
         return dfs

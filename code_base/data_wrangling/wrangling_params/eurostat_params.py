@@ -1,9 +1,9 @@
 from code_base.data_bindings.EU_ISO2_translation import EU_COUNTRIES_ISO_2_DECODES
 from code_base.data_bindings.EU_NUTS3_translation import EU_DECODE_NUTS3_REGIONS
-from code_base.data_wrangling.wrangling_strategies.eurostat_wrangling_strategies import (GroupByAgeSexLocation,
-                                                                                         GroupByAgeSexLocationWeek,
-                                                                                         GroupBySexLocation,
-                                                                                         GroupBySexLocationWeek)
+from code_base.data_wrangling.groupings.group_eurostat_data import (GroupByAgeSexLocationWeek,
+                                                                    GroupByAgeSexLocation,
+                                                                    GroupBySexLocationWeek,
+                                                                    GroupBySexLocation)
 
 
 class EurostatParams:
@@ -33,4 +33,9 @@ class EurostatParams:
         'asl': GroupByAgeSexLocation,
         'slw': GroupBySexLocationWeek,
         'sl': GroupBySexLocation,
+    }
+
+    GROUP_DATA_BY_POPULATION = {
+        'asl': GroupByAgeSexLocation,
+        'sl': GroupBySexLocation
     }

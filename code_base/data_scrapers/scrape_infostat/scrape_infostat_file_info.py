@@ -3,11 +3,6 @@ from code_base.data_scrapers.scrape_infostat.scrape_infostat_dwnld_strategies im
                                                                                       RequestStrategyInfostatEnglish)
 from code_base.data_scrapers.scrape_infostat.scrape_infostat_filters import *
 
-# POP_BY_SEX_AGE_REG = auto()
-# AVG_LIFE_EXPECTANCY_BY_SEX = auto()
-# LIFE_EXPECTANCY_BY_SEX = auto()
-# MORTALITY_BY_SEX_AGE_REG = auto()
-# POP_BY_MUNICIPALITY = auto()
 
 class InfostatFiles:
     """

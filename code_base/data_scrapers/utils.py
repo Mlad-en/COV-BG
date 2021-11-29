@@ -2,15 +2,16 @@ import os
 from typing import List, Optional, Dict
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, ElementNotInteractableException
+from selenium.common.exceptions import TimeoutException, ElementNotInteractableException, StaleElementReferenceException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome import webdriver
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote import webelement
 
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 
 def launch_browser(url, headless: bool = True) -> webdriver.WebDriver:
@@ -26,8 +27,11 @@ def launch_browser(url, headless: bool = True) -> webdriver.WebDriver:
     options = Options()
     if headless:
         options.add_argument('--headless')
+        options.add_argument("-width=1920")
+        options.add_argument("-height=1080")
 
-    browser = webdriver.WebDriver(ChromeDriverManager(log_level=0).install(), options=options)
+    browser = webdriver.WebDriver(executable_path=GeckoDriverManager(log_level=0, cache_valid_range=1).install(),
+                                  options=options)
 
     if not headless:
         browser.maximize_window()
@@ -107,13 +111,13 @@ class FindPageobjects:
         :return: Returns the awaited objects or an empty list.
         """
         obj_types = {
-            'id': self.browser.find_elements_by_id,
-            'css': self.browser.find_elements_by_css_selector,
-            'class': self.browser.find_elements_by_class_name,
-            'xpath': self.browser.find_elements_by_xpath,
+            'id': By.ID,
+            'css': By.CSS_SELECTOR,
+            'class': By.CLASS_NAME,
+            'xpath': By.XPATH,
         }
 
-        objs = obj_types[locator_type](pg_obj)
+        objs = self.browser.find_elements(obj_types[locator_type], pg_obj)
         return objs
 
 
@@ -123,6 +127,7 @@ class PageObjectActions:
     def __init__(self, browser):
         self.browser = browser
         self.locators = FindPageobjects(self.browser)
+        self.action = ActionChains(self.browser)
 
     def find_and_click_element(self, locator_type: str, obj: str):
         """
@@ -132,7 +137,10 @@ class PageObjectActions:
         :return: The function returns None.
         """
         obj = self.locators.locate_element(locator_type, obj)
-        obj.click()
+        if obj.is_displayed():
+            self.action.move_to_element(obj)
+            obj.click()
+            self.action.perform()
 
     def find_and_type_into_element(self, locator_type: str, obj: str, text: str):
         """
@@ -143,7 +151,9 @@ class PageObjectActions:
         :return: The function returns None.
         """
         obj = self.locators.locate_element(locator_type, obj)
+        self.action.move_to_element(obj)
         obj.send_keys(text)
+        self.action.perform()
 
     def click_all_specific_elements(self, locator_type: str, objs: List):
         """
@@ -168,7 +178,10 @@ class PageObjectActions:
         if fe_objects:
             for el in fe_objects:
                 try:
-                    el.click()
+                    if el.is_displayed():
+                        self.action.move_to_element(el)
+                        el.click()
+                        self.action.perform()
                 except ElementNotInteractableException as e:
                     if raise_error:
                         raise e

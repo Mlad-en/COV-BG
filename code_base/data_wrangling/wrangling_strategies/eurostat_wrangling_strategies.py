@@ -1,49 +1,7 @@
-from abc import ABC, abstractmethod
-from typing import List
-
-import pandas as pd
+from typing import List, Optional
 
 from code_base.data_wrangling.filters.filter_specifications import *
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
-
-
-class GroupData(ABC):
-
-    def __init__(self, df: pd.DataFrame):
-        self.df = df
-
-    @abstractmethod
-    def group_data(self):
-        pass
-
-
-class GroupByAgeSexLocationWeek(GroupData):
-
-    def group_data(self):
-        self.df.fillna(method='pad', inplace=True)
-        return self.df.groupby([COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION, COL_HEAD.WEEK], as_index=False).sum()
-
-
-class GroupByAgeSexLocation(GroupData):
-
-    def group_data(self):
-        self.df.drop([COL_HEAD.WEEK], axis=1, inplace=True)
-        return self.df.groupby([COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION], as_index=False).sum()
-
-
-class GroupBySexLocationWeek(GroupData):
-
-    def group_data(self):
-        self.df.fillna(method='pad', inplace=True)
-        self.df.drop([COL_HEAD.AGE], axis=1, inplace=True)
-        return self.df.groupby([COL_HEAD.SEX, COL_HEAD.LOCATION, COL_HEAD.WEEK], as_index=False).sum()
-
-
-class GroupBySexLocation(GroupData):
-
-    def group_data(self):
-        self.df.drop([COL_HEAD.AGE, COL_HEAD.WEEK], axis=1, inplace=True)
-        return self.df.groupby([COL_HEAD.SEX, COL_HEAD.LOCATION], as_index=False).sum()
 
 
 class WranglingStrategyBase(ABC):
@@ -65,7 +23,7 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
                  location: List,
                  group_by,
                  start_week: int,
-                 end_week: int,
+                 end_week: Optional[int],
                  years: List[str],):
 
         self.age = age
@@ -76,15 +34,33 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
         self.end_week = end_week
         self.years = years
 
+
     @property
-    def _specifications(self) -> Specification:
+    def _full_specs(self) -> List:
+        args = [AgeSpecification(self.age),
+                SexSpecification(self.sex),
+                LocationSpecification(self.location),
+                WeekStartSpecification(self.start_week),
+                WeekEndSpecification(self.end_week)]
+
+        return args
+
+    @property
+    def _no_end_week_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
                 LocationSpecification(self.location),
                 WeekStartSpecification(self.start_week)]
-        if self.end_week:
-            args.append(AgeSpecification(self.age))
 
+        return args
+
+    @property
+    def _specifications(self) -> Specification:
+        if self.end_week:
+            args = self._full_specs
+            return AndSpecification(*args)
+
+        args = self._no_end_week_specs
         return AndSpecification(*args)
 
     def filter_data(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -100,8 +76,29 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
 
 class EurostatEUPopulationWranglingStrategy(WranglingStrategyBase):
 
-    def filter_data(self) -> pd.DataFrame:
-        pass
+    def __init__(self, age: List, sex: List, group_by):
+        self.age = age
+        self.sex = sex
+        self.group_by = group_by
 
-    def group_data(self) -> pd.DataFrame:
-        pass
+    @property
+    def _full_specs(self) -> List:
+        args = [AgeSpecification(self.age),
+                SexSpecification(self.sex)]
+
+        return args
+
+    @property
+    def _specifications(self) -> Specification:
+        args = self._full_specs
+        return AndSpecification(*args)
+
+    def filter_data(self, data: pd.DataFrame) -> pd.DataFrame:
+
+        data[COL_HEAD.POPULATION] = data[COL_HEAD.POPULATION].astype(int, errors='raise')
+        data = FilterData(self._specifications).filter_out_data(data)
+        return data
+
+    def group_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        data = self.group_by(data).group_data()
+        return data

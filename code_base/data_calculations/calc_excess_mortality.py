@@ -12,60 +12,77 @@ class CalculateEurostatExcessMortality:
 
     """
 
-    def __init__(self, df: pd.DataFrame):
-        self.df = df
-
-    def _calc_std_dev(self, years: List):
+    @staticmethod
+    def _calc_std_dev(df: pd.DataFrame, years: List):
         """
 
+        :param df:
         :param years:
         :return:
         """
-        self.df[COL_HEAD.STANDARD_DEVIATION] = self.df.loc[:, years].std(axis=1, ddof=0).round(1)
+        df[COL_HEAD.STANDARD_DEVIATION] = df.loc[:, years].std(axis=1, ddof=0).round(1)
 
-    def _add_zscore_con_int(self):
+        return df
+
+    @staticmethod
+    def _add_zscore_con_int(df: pd.DataFrame):
         """
 
+        :param df:
         :return:
         """
-        self.df[COL_HEAD.Z_SCORE] = 1.96
-        self.df[COL_HEAD.CONFIDENCE_INTERVAL] = self.df.apply(
+        df[COL_HEAD.Z_SCORE] = 1.96
+        df[COL_HEAD.CONFIDENCE_INTERVAL] = df.apply(
             lambda x: x[COL_HEAD.Z_SCORE] * (x[COL_HEAD.STANDARD_DEVIATION] / sqrt(5)),
             axis=1).round(1)
 
-    def add_mean_mort(self, years: List):
+        return df
+
+    @staticmethod
+    def add_mean_mort(df: pd.DataFrame, years: List):
         """
 
+        :param df:
         :param years:
         :return:
         """
-        self.df[COL_HEAD.MEAN_MORTALITY] = self.df[years].mean(axis=1).round(1)
+        df[COL_HEAD.MEAN_MORTALITY] = df[years].mean(axis=1).round(1)
 
-    def _add_mean_mort_boundaries(self):
+        return df
+
+    @staticmethod
+    def _add_mean_mort_boundaries(df: pd.DataFrame):
         """
 
         :return:
         """
-        self.df[COL_HEAD.LB_MEAN_MORTALITY] = self.df[COL_HEAD.MEAN_MORTALITY] - self.df[COL_HEAD.CONFIDENCE_INTERVAL]
-        self.df[COL_HEAD.UB_MEAN_MORTALITY] = self.df[COL_HEAD.MEAN_MORTALITY] + self.df[COL_HEAD.CONFIDENCE_INTERVAL]
+        df[COL_HEAD.LB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_MORTALITY] - df[COL_HEAD.CONFIDENCE_INTERVAL]
+        df[COL_HEAD.UB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_MORTALITY] + df[COL_HEAD.CONFIDENCE_INTERVAL]
 
-    def _add_excess_mort(self, analyze_year):
+        return df
+
+    @staticmethod
+    def _add_excess_mort(df: pd.DataFrame, analyze_year):
         """
 
         :param analyze_year:
         :return:
         """
-        self.df[COL_HEAD.EXCESS_MORTALITY_MEAN] = self.df.apply(
+        df[COL_HEAD.EXCESS_MORTALITY_MEAN] = df.apply(
             lambda x: x[analyze_year] - x[COL_HEAD.MEAN_MORTALITY],
             axis=1).round(1)
 
-    def _add_pscore(self, analyze_year):
+        return df
+
+    @staticmethod
+    def _add_pscore(df: pd.DataFrame, analyze_year):
         """
 
+        :param df:
         :param analyze_year:
         :return:
         """
-        self.df[COL_HEAD.P_SCORE] = self.df.apply(
+        df[COL_HEAD.P_SCORE] = df.apply(
             lambda x:
             (
                     (x[analyze_year] - x[COL_HEAD.MEAN_MORTALITY])
@@ -76,7 +93,7 @@ class CalculateEurostatExcessMortality:
             else 0,
             axis=1).round(1)
 
-        self.df[COL_HEAD.P_SCORE_FLUCTUATION] = self.df.apply(
+        df[COL_HEAD.P_SCORE_FLUCTUATION] = df.apply(
             lambda x:
             x[COL_HEAD.P_SCORE]
             -
@@ -91,62 +108,74 @@ class CalculateEurostatExcessMortality:
             else np.nan,
             axis=1).round(1)
 
-    def _concat_column_vals(self, main_col, additional_col, brackets: List):
-        return self.df[main_col].map(str) + brackets[0] + self.df[additional_col].map(str) + brackets[1]
+        return df
 
-    def _add_formatted_cols(self):
-        self.df[COL_HEAD.MEAN_MORTALITY_DECORATED] = self._concat_column_vals(COL_HEAD.MEAN_MORTALITY,
-                                                                              COL_HEAD.CONFIDENCE_INTERVAL,
-                                                                              [' (±', ')'])
-        self.df[COL_HEAD.EXCESS_MORTALITY_DECORATED] = self._concat_column_vals(COL_HEAD.EXCESS_MORTALITY_MEAN,
-                                                                                COL_HEAD.CONFIDENCE_INTERVAL,
-                                                                                [' (±', ')'])
-        self.df[COL_HEAD.P_SCORE_DECORATED] = self._concat_column_vals(COL_HEAD.P_SCORE,
-                                                                       COL_HEAD.P_SCORE_FLUCTUATION,
-                                                                       ['% (±', '%)'])
+    @staticmethod
+    def _concat_column_vals(df: pd.DataFrame, main_col, additional_col, brackets: List):
+        return df[main_col].map(str) + brackets[0] + df[additional_col].map(str) + brackets[1]
 
-    def _calculate_non_dec_excess_mortality(self, compare_years: List, analyze_year: str):
-        self._calc_std_dev(compare_years)
-        self._add_zscore_con_int()
-        self._add_mean_mort_boundaries()
-        self._add_excess_mort(analyze_year)
-        self._add_pscore(analyze_year)
+    def _add_formatted_cols(self, df: pd.DataFrame):
+        df[COL_HEAD.MEAN_MORTALITY_DECORATED] = self._concat_column_vals(df,
+                                                                         COL_HEAD.MEAN_MORTALITY,
+                                                                         COL_HEAD.CONFIDENCE_INTERVAL,
+                                                                         [' (±', ')'])
 
-    def calculate_excess_mortality(self, compare_years: List, analyze_year: str):
-        self._calculate_non_dec_excess_mortality(compare_years, analyze_year)
-        self._add_formatted_cols()
+        df[COL_HEAD.EXCESS_MORTALITY_DECORATED] = self._concat_column_vals(df,
+                                                                           COL_HEAD.EXCESS_MORTALITY_MEAN,
+                                                                           COL_HEAD.CONFIDENCE_INTERVAL,
+                                                                           [' (±', ')'])
 
-        return self.df
+        df[COL_HEAD.P_SCORE_DECORATED] = self._concat_column_vals(df,
+                                                                  COL_HEAD.P_SCORE,
+                                                                  COL_HEAD.P_SCORE_FLUCTUATION,
+                                                                  ['% (±', '%)'])
+
+        return df
+
+    def _calculate_non_dec_excess_mortality(self, df: pd.DataFrame, compare_years: List, analyze_year: int):
+        df = self._calc_std_dev(df, compare_years)
+        df = self._add_zscore_con_int(df)
+        df = self._add_mean_mort_boundaries(df)
+        df = self._add_excess_mort(df, analyze_year)
+        df = self._add_pscore(df, analyze_year)
+
+        return df
+
+    def calculate_excess_mortality(self, df: pd.DataFrame, compare_years: List, analyze_year: int):
+        df = self._calculate_non_dec_excess_mortality(df, compare_years, analyze_year)
+        df = self._add_formatted_cols(df)
+
+        return df
 
 
-class CalculateEurostatExcessMortalityToPopulation(CalculateEurostatExcessMortality):
-
-    def __init__(self, df: pd.DataFrame, population_df: pd.DataFrame, merge_on: List):
-        self.population_df = population_df
-        self.merge_on = merge_on
-        super().__init__(df)
-
-    def _calc_pop_to_excess_mortality(self):
-        """
-
-        :return:
-        """
-        self.df = self.df.merge(self.population_df, on=self.merge_on)
-
-        self.df[COL_HEAD.EXCESS_MORTALITY_PER_100_000] = self.df.apply(
-            lambda x: x[COL_HEAD.EXCESS_MORTALITY_MEAN] / x[COL_HEAD.POPULATION] * 100_000,
-            axis=1).round(1)
-
-        self.df[COL_HEAD.EXCESS_MORTALITY_PER_100_000_FLUCTUATION] = self.df.apply(
-            lambda x:
-            abs(
-                (
-                        (x[COL_HEAD.EXCESS_MORTALITY_MEAN] + x[COL_HEAD.CONFIDENCE_INTERVAL])
-                        / x[COL_HEAD.POPULATION] * 100_000
-                )
-                - x[COL_HEAD.EXCESS_MORTALITY_PER_100_000]
-            ),
-            axis=1).round(1)
-
-    def _add_formatted_cols(self):
-        super()._add_formatted_cols()
+# class CalculateEurostatExcessMortalityToPopulation(CalculateEurostatExcessMortality):
+#
+#     def __init__(self, df: pd.DataFrame, population_df: pd.DataFrame, merge_on: List):
+#         self.population_df = population_df
+#         self.merge_on = merge_on
+#         super().__init__(df)
+#
+#     def _calc_pop_to_excess_mortality(self):
+#         """
+#
+#         :return:
+#         """
+#         self.df = self.df.merge(self.population_df, on=self.merge_on)
+#
+#         self.df[COL_HEAD.EXCESS_MORTALITY_PER_100_000] = self.df.apply(
+#             lambda x: x[COL_HEAD.EXCESS_MORTALITY_MEAN] / x[COL_HEAD.POPULATION] * 100_000,
+#             axis=1).round(1)
+#
+#         self.df[COL_HEAD.EXCESS_MORTALITY_PER_100_000_FLUCTUATION] = self.df.apply(
+#             lambda x:
+#             abs(
+#                 (
+#                         (x[COL_HEAD.EXCESS_MORTALITY_MEAN] + x[COL_HEAD.CONFIDENCE_INTERVAL])
+#                         / x[COL_HEAD.POPULATION] * 100_000
+#                 )
+#                 - x[COL_HEAD.EXCESS_MORTALITY_PER_100_000]
+#             ),
+#             axis=1).round(1)
+#
+#     def _add_formatted_cols(self):
+#         super()._add_formatted_cols()
