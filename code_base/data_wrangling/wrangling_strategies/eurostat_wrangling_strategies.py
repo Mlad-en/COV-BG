@@ -76,15 +76,17 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
 
 class EurostatEUPopulationWranglingStrategy(WranglingStrategyBase):
 
-    def __init__(self, age: List, sex: List, group_by):
+    def __init__(self, age: List, sex: List, location: List, group_by):
         self.age = age
         self.sex = sex
+        self.location = location
         self.group_by = group_by
 
     @property
     def _full_specs(self) -> List:
         args = [AgeSpecification(self.age),
-                SexSpecification(self.sex)]
+                SexSpecification(self.sex),
+                LocationSpecification(self.location)]
 
         return args
 

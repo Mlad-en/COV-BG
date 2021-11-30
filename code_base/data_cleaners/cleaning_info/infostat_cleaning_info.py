@@ -1,7 +1,7 @@
 from typing import List
 
 from code_base.data_bindings.data_types import InfostatDataSets as DtTp
-from code_base.data_cleaners.cleaning_params.infostat_params import InfostatHeaders, InfostatParams
+from code_base.data_cleaners.cleaning_params.infostat_params import InfostatHeaders, InfostatCleaningParams
 from code_base.data_cleaners.cleaning_strategies.infostat_cleaning_strategies import *
 
 
@@ -31,11 +31,11 @@ class InfostatConfig:
     }
 
     INFOSTAT_INIT_COLUMNS = {
-        DtTp.POP_BY_SEX_AGE_REG: InfostatParams.cols_pop_by_age_sex_reg(),
-        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: InfostatParams.cols_avg_life_expectancy_by_sex(),
-        DtTp.LIFE_EXPECTANCY_BY_SEX: InfostatParams.cols_life_expectancy_by_sex(),
-        DtTp.MORTALITY_BY_SEX_AGE_MUN: InfostatParams.cols_mortality_by_age_sex_mun(),
-        DtTp.POP_BY_MUNICIPALITY: InfostatParams.cols_population_by_municipality(),
+        DtTp.POP_BY_SEX_AGE_REG: InfostatCleaningParams.cols_pop_by_age_sex_reg(),
+        DtTp.AVG_LIFE_EXPECTANCY_BY_SEX: InfostatCleaningParams.cols_avg_life_expectancy_by_sex(),
+        DtTp.LIFE_EXPECTANCY_BY_SEX: InfostatCleaningParams.cols_life_expectancy_by_sex(),
+        DtTp.MORTALITY_BY_SEX_AGE_MUN: InfostatCleaningParams.cols_mortality_by_age_sex_mun(),
+        DtTp.POP_BY_MUNICIPALITY: InfostatCleaningParams.cols_population_by_municipality(),
     }
 
     MELT_COLS = {

@@ -1,4 +1,5 @@
 /Pipfile.lock
 /data_source/Population/.ipynb_checkpoints/
 /prelim_analysis/
-/code_base/data_source/geckodriver.log
+
+geckodriver.log

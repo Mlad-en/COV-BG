@@ -24,7 +24,7 @@ class InfostatHeaders:
     FEMALE = SEXES.FEMALE
 
 
-class InfostatParams:
+class InfostatCleaningParams:
 
     @staticmethod
     def cols_pop_by_age_sex_reg():

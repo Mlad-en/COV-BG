@@ -1,5 +1,3 @@
-import pandas as pd
-
 from code_base.data_bindings.data_types import CoronaVirusBGDataSets, InfostatDataSets, EurostatDataSets
 from code_base.data_cleaners.clean_data import clean_data
 from code_base.data_fetchers.fetch_data import fetch_data

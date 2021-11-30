@@ -2,7 +2,8 @@ import os
 from typing import List, Optional, Dict
 
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException, ElementNotInteractableException, StaleElementReferenceException
+from selenium.common.exceptions import TimeoutException, ElementNotInteractableException, \
+    StaleElementReferenceException, ElementClickInterceptedException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
@@ -139,8 +140,11 @@ class PageObjectActions:
         obj = self.locators.locate_element(locator_type, obj)
         if obj.is_displayed():
             self.action.move_to_element(obj)
-            obj.click()
-            self.action.perform()
+            try:
+                obj.click()
+            except ElementClickInterceptedException:
+                # retry click.
+                obj.click()
 
     def find_and_type_into_element(self, locator_type: str, obj: str, text: str):
         """
@@ -153,7 +157,6 @@ class PageObjectActions:
         obj = self.locators.locate_element(locator_type, obj)
         self.action.move_to_element(obj)
         obj.send_keys(text)
-        self.action.perform()
 
     def click_all_specific_elements(self, locator_type: str, objs: List):
         """
@@ -181,7 +184,6 @@ class PageObjectActions:
                     if el.is_displayed():
                         self.action.move_to_element(el)
                         el.click()
-                        self.action.perform()
                 except ElementNotInteractableException as e:
                     if raise_error:
                         raise e
