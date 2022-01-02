@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from code_base.data_wrangling.filters.filter_specifications import *
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
@@ -23,7 +23,7 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
                  location: List,
                  group_by,
                  start_week: int,
-                 end_week: Optional[int],
+                 cut_off_point: Dict,
                  years: List[str],):
 
         self.age = age
@@ -31,12 +31,19 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
         self.location = location
         self.group_by = group_by
         self.start_week = start_week
-        self.end_week = end_week
+        self.cut_off_point = cut_off_point
         self.years = years
 
+    @property
+    def end_week(self):
+        return self.cut_off_point.get('end_week')
 
     @property
-    def _full_specs(self) -> List:
+    def natural_cut_off(self):
+        return self.cut_off_point.get('nat_cut_off_year')
+
+    @property
+    def _endweek_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
                 LocationSpecification(self.location),
@@ -50,14 +57,15 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
                 LocationSpecification(self.location),
-                WeekStartSpecification(self.start_week)]
+                WeekStartSpecification(self.start_week),
+                NaturalWeekEndSpecification(self.natural_cut_off)]
 
         return args
 
     @property
     def _specifications(self) -> Specification:
         if self.end_week:
-            args = self._full_specs
+            args = self._endweek_specs
             return AndSpecification(*args)
 
         args = self._no_end_week_specs

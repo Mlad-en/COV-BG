@@ -26,6 +26,7 @@ class COLUMN_HEADING_CONSTS:
 
     EXCESS_MORTALITY_PER_100_000 = 'Excess_mortality_per_100_000'
     EXCESS_MORTALITY_PER_100_000_FLUCTUATION = 'Excess_mortality_per_100_000'  + '_fluctuation'
+    EXCESS_MORTALITY_PER_100_000_DECORATED = EXCESS_MORTALITY_PER_100_000 + ' ±'
 
     P_SCORE = 'P_Score'
     P_SCORE_FLUCTUATION = P_SCORE + '_fluctuation'

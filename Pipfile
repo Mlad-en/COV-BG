@@ -20,6 +20,7 @@ matplotlib = "*"
 plotly = "*"
 xlsxwriter = "*"
 pytest = "*"
+scikit-learn = "*"
 
 [requires]
 python_version = "3.8"

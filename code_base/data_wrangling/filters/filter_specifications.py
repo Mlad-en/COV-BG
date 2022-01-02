@@ -53,6 +53,18 @@ class WeekEndSpecification(Specification):
         return list(df[df[COL_HEAD.WEEK].gt(self.week_end)].index)
 
 
+class NaturalWeekEndSpecification(Specification):
+
+    def __init__(self, analyze_year: int):
+        self.analyze_year = analyze_year
+
+    def is_satisfied(self, df) -> List:
+        group_cols = [COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION]
+        df2 = df[df[self.analyze_year].isnull()].copy()
+        indices = df2.groupby(group_cols).filter(lambda x: min(x['Week']) < 53).index
+        return list(indices)
+
+
 class WeekRangeSpecification(Specification):
     def __init__(self, weeks: List):
         self.weeks = weeks

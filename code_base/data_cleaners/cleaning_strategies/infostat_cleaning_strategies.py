@@ -76,7 +76,7 @@ class PopulationAgeSexRegionCleaningStrategy(BaseInfostatCleaningStrategy):
         :return: Functions returns None.
         """
         repl_data = [
-            [self.headers.LOCATION, 'Sofia (stolitsa)', 'Sofia-grad'],
+            [self.headers.LOCATION, 'Sofia-grad', 'Sofia (stolitsa)'],
             [self.headers.POPULATION, '-', '0']
         ]
         for dt in repl_data:

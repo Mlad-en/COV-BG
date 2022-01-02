@@ -7,6 +7,12 @@ from code_base.data_wrangling.groupings.group_eurostat_data import (GroupByAgeSe
 
 
 class EurostatParams:
+
+    """
+    Excluding countries that do not have complete information for the past 5 years (e.g. no mortality statistics for
+    Germany for 2015) or incomplete information for the years analyzed (No Eurostat info for UK for the last week of 2020
+    and no info for the entire of 2021.
+    """
     EXCLUDE_DEFAULT_COUNTRIES = [
         EU_COUNTRIES_ISO_2_DECODES['AD'],
         EU_COUNTRIES_ISO_2_DECODES['AL'],
@@ -15,7 +21,10 @@ class EurostatParams:
         EU_COUNTRIES_ISO_2_DECODES['GE'],
         EU_COUNTRIES_ISO_2_DECODES['UK'],
     ]
-
+    """
+    Excluding Bulgarian regions based on their NUTS status. Only NUTS-3 regions are used for this analysis. 
+    NUTS-2 regions are thus to be exluced.
+    """
     EXCLUDE_DEFAULT_REGIONS = [
         EU_DECODE_NUTS3_REGIONS['BG'],
         EU_DECODE_NUTS3_REGIONS['BG3'],
