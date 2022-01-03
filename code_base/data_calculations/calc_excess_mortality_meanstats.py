@@ -46,7 +46,7 @@ class CalculateEurostatExcessMortality:
         :param years:
         :return:
         """
-        df[COL_HEAD.MEAN_MORTALITY] = df[years].mean(axis=1).round(1)
+        df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] = df[years].mean(axis=1).round(1)
 
         return df
 
@@ -56,8 +56,8 @@ class CalculateEurostatExcessMortality:
 
         :return:
         """
-        df[COL_HEAD.LB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_MORTALITY] - df[COL_HEAD.CONFIDENCE_INTERVAL]
-        df[COL_HEAD.UB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_MORTALITY] + df[COL_HEAD.CONFIDENCE_INTERVAL]
+        df[COL_HEAD.LB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] - df[COL_HEAD.CONFIDENCE_INTERVAL]
+        df[COL_HEAD.UB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] + df[COL_HEAD.CONFIDENCE_INTERVAL]
 
         return df
 
@@ -69,7 +69,7 @@ class CalculateEurostatExcessMortality:
         :return:
         """
         df[COL_HEAD.EXCESS_MORTALITY_MEAN] = df.apply(
-            lambda x: x[analyze_year] - x[COL_HEAD.MEAN_MORTALITY],
+            lambda x: x[analyze_year] - x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY],
             axis=1).round(1)
 
         return df
@@ -85,11 +85,11 @@ class CalculateEurostatExcessMortality:
         df[COL_HEAD.P_SCORE] = df.apply(
             lambda x:
             (
-                    (x[analyze_year] - x[COL_HEAD.MEAN_MORTALITY])
+                    (x[analyze_year] - x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY])
                     /
-                    x[COL_HEAD.MEAN_MORTALITY]
+                    x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY]
             ) * 100
-            if x[COL_HEAD.MEAN_MORTALITY] != 0
+            if x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] != 0
             else 0,
             axis=1).round(1)
 
@@ -116,7 +116,7 @@ class CalculateEurostatExcessMortality:
 
     def _add_formatted_cols(self, df: pd.DataFrame):
         df[COL_HEAD.MEAN_MORTALITY_DECORATED] = self._concat_column_vals(df,
-                                                                         COL_HEAD.MEAN_MORTALITY,
+                                                                         COL_HEAD.MEAN_OR_EXPECTED_MORTALITY,
                                                                          COL_HEAD.CONFIDENCE_INTERVAL,
                                                                          [' (±', ')'])
 
