@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from code_base.data_calculations.calc_excess_mortality_meanstats import CalculateEurostatExcessMortality, \
+from code_base.data_calculations.calc_excess_mortality_meanstats import CalculateEurostatExcessMortalityMean, \
     CalculateEurostatExcessMortalityToPopulation
-from code_base.data_calculations.calc_excess_mortality_projected import get_predicted_mortality
+from code_base.data_calculations.calc_excess_mortality_projected import CalculateExcessMortalityPredicted
 from code_base.data_wrangling.wrangling_info.eurostat_wrangling_info import EurostatWranglingInfo
 from code_base.data_wrangling.wrangling_info.infostat_wrangling_info import InfostatWranglingInfo
 
@@ -20,7 +20,7 @@ class CalculationsBase:
 class CalcExcessMortalityMean(CalculationsBase):
 
     def __init__(self, data_type, all_years):
-        self.mortality_calculations = CalculateEurostatExcessMortality()
+        self.mortality_calculations = CalculateEurostatExcessMortalityMean()
         self.wrangling_info = EurostatWranglingInfo(data_type)
         self.all_years = all_years
 
@@ -84,9 +84,6 @@ class CalcExcessMortalityMean(CalculationsBase):
         :param age_groups:
         :param sex_groups:
         :param start_week:
-        :param all_years:
-        :param analyze_year:
-        :param compare_years:
         :param end_week:
         :param group_by: Options are: 'all', 'asl', 'slw','sl'.
         :return:
@@ -169,7 +166,7 @@ class CalcBGRegionPop(CalculationsBase):
 class CalcExcessMortalityPredicted(CalculationsBase):
 
     def __init__(self, data_type, all_years):
-        self.mortality_calculations = CalculateEurostatExcessMortality()
+        self.mortality_calculations = CalculateExcessMortalityPredicted()
         self.wrangling_info = EurostatWranglingInfo(data_type)
         self.all_years = all_years
 
@@ -233,9 +230,6 @@ class CalcExcessMortalityPredicted(CalculationsBase):
         :param age_groups:
         :param sex_groups:
         :param start_week:
-        :param all_years:
-        :param analyze_year:
-        :param compare_years:
         :param end_week:
         :return:
         """
@@ -245,7 +239,8 @@ class CalcExcessMortalityPredicted(CalculationsBase):
 
         data = wrangling_strategy.filter_data(clean_data)
         data = wrangling_strategy.group_data(data)
-        data = get_predicted_mortality(data, self.all_years)
+        data = self.mortality_calculations.get_predicted_mortality(data, self.all_years)
+        data = self.mortality_calculations.add_excess_mort_calcs(data)
 
         return data
 
@@ -255,7 +250,7 @@ if __name__ == '__main__':
     from code_base.data_bindings.data_types import InfostatDataSets, EurostatDataSets
 
     age = ['Total']
-    sex = ['Total']
+    sex = ['Total', 'Male', 'Female']
     region = 'BG'
     start_week = 10
     group_mort = 'slw'

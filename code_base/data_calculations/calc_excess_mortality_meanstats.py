@@ -7,7 +7,7 @@ import pandas as pd
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
 
 
-class CalculateEurostatExcessMortality:
+class CalculateEurostatExcessMortalityMean:
     """
 
     """
@@ -132,7 +132,7 @@ class CalculateEurostatExcessMortality:
 
         return df
 
-    def _calculate_non_dec_excess_mortality(self, df: pd.DataFrame, compare_years: List, analyze_year: int):
+    def _calculations_with_mean_mortality(self, df: pd.DataFrame, compare_years: List, analyze_year: int):
         df = self._calc_std_dev(df, compare_years)
         df = self._add_zscore_con_int(df)
         df = self._add_mean_mort_boundaries(df)
@@ -142,7 +142,8 @@ class CalculateEurostatExcessMortality:
         return df
 
     def calculate_excess_mortality(self, df: pd.DataFrame, compare_years: List, analyze_year: int):
-        df = self._calculate_non_dec_excess_mortality(df, compare_years, analyze_year)
+
+        df = self._calculations_with_mean_mortality(df, compare_years, analyze_year)
         df = self._add_formatted_cols(df)
 
         return df

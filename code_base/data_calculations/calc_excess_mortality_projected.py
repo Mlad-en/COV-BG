@@ -1,7 +1,8 @@
+from math import sqrt
 from typing import List
 
 import pandas as pd
-from numpy import ndarray, unique
+from numpy import ndarray, unique, nan
 
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
 from code_base.data_calculations.utils.prediction_utils import (get_prev_years_indices,
@@ -14,86 +15,174 @@ from code_base.data_calculations.utils.prediction_utils import (get_prev_years_i
                                                                 is_significant)
 
 
-def predict(all_mort: ndarray) -> tuple:
-    """
+class CalculateExcessMortalityPredicted:
 
-    :param all_mort: Receives a ndarray of size (n x 3), where  the columns are:
-    1. Year
-    2. Week
-    3. Mortality
-    :return: Returns calculations for:
-     1. Expected Mortality (predicted based on previous 5 years)
-     2. Actual Mortality
-     3. Excess Mortality (diff between actual and expected mortality)
-     4. Excess Mortality Standard Deviation
-    """
+    @staticmethod
+    def predict(all_mort: ndarray) -> tuple:
+        """
 
-    prev_years = get_prev_years_indices(all_mort)
-    time_frame_pys = get_timeframe_count(all_mort, prev_years)
+        :param all_mort: Receives a ndarray of size (n x 3), where  the columns are:
+        1. Year
+        2. Week
+        3. Mortality
+        :return: Returns calculations for:
+         1. Expected Mortality (predicted based on previous 5 years)
+         2. Actual Mortality
+         3. Excess Mortality (diff between actual and expected mortality)
+         4. Excess Mortality Standard Deviation
+        """
 
-    analyzed_year = get_analyzed_year_indices(all_mort)
-    time_frame_ay = get_timeframe_count(all_mort, analyzed_year)
+        prev_years = get_prev_years_indices(all_mort)
+        time_frame_pys = get_timeframe_count(all_mort, prev_years)
 
-    assert time_frame_pys == time_frame_ay
+        analyzed_year = get_analyzed_year_indices(all_mort)
+        time_frame_ay = get_timeframe_count(all_mort, analyzed_year)
 
-    train_on = generate_predictors(all_mort, prev_years, time_frame_pys)
-    predict_for = generate_predictors(all_mort, analyzed_year, time_frame_ay)
+        assert time_frame_pys == time_frame_ay
 
-    baseline = predict_baseline(train_on, all_mort[prev_years, 2], predict_for)
+        train_on = generate_predictors(all_mort, prev_years, time_frame_pys)
+        predict_for = generate_predictors(all_mort, analyzed_year, time_frame_ay)
 
-    # Excess mortality
-    total_excess, sum_expected, sum_actual = get_mortality_eea_info(all_mort, analyzed_year, baseline)
+        baseline = predict_baseline(train_on, all_mort[prev_years, 2], predict_for)
 
-    # Manually Fit Data
-    total_excess_std = generate_std(all_mort, prev_years, train_on, predict_for, time_frame_pys)
+        # Excess mortality
+        total_excess, sum_expected, sum_actual = get_mortality_eea_info(all_mort, analyzed_year, baseline)
 
-    return total_excess, sum_expected, sum_actual, total_excess_std
+        # Manually Fit Data
+        total_excess_std = generate_std(all_mort, prev_years, train_on, predict_for, time_frame_pys)
 
+        return total_excess, sum_expected, sum_actual, total_excess_std
 
-def add_significance(df: pd.dataframe) -> pd.DataFrame:
-    df[COL_HEAD.Z_SCORE] = df.apply(lambda x: x[COL_HEAD.EXCESS_MORTALITY] / x[COL_HEAD.STANDARD_DEVIATION], axis=1)
-    df[COL_HEAD.IS_SIGNIFICANT] = df.apply(lambda x: is_significant(x[COL_HEAD.Z_SCORE]), axis=1)
+    def get_predicted_mortality(self, df: pd.DataFrame, analyze_years: List) -> pd.DataFrame:
 
-    return df
+        df = df.melt(id_vars=[COL_HEAD.LOCATION, COL_HEAD.WEEK, COL_HEAD.SEX],
+                     value_vars=analyze_years,
+                     var_name=COL_HEAD.YEAR,
+                     value_name=COL_HEAD.MORTALITY)
+        df[COL_HEAD.YEAR] = df[COL_HEAD.YEAR].astype(int)
 
+        countries = unique(df[COL_HEAD.LOCATION])
+        sexes = unique(df[COL_HEAD.SEX])
 
-def get_predicted_mortality(df: pd.DataFrame, analyze_years: List) -> pd.DataFrame:
+        const_df = {
+            COL_HEAD.LOCATION: [],
+            COL_HEAD.SEX: [],
+            COL_HEAD.MEAN_OR_EXPECTED_MORTALITY: [],
+            COL_HEAD.MORTALITY: [],
+            COL_HEAD.EXCESS_MORTALITY_BASE: [],
+            COL_HEAD.STANDARD_DEVIATION: [],
+        }
 
-    df = df.melt(id_vars=[COL_HEAD.LOCATION, COL_HEAD.WEEK, COL_HEAD.SEX],
-                 value_vars=analyze_years,
-                 var_name=COL_HEAD.YEAR,
-                 value_name=COL_HEAD.MORTALITY)
-    df[COL_HEAD.YEAR] = df[COL_HEAD.YEAR].astype(int)
+        for _, country in enumerate(countries):
+            for _, sex in enumerate(sexes):
 
-    countries = unique(df[COL_HEAD.LOCATION])
-    sexes = unique(df[COL_HEAD.SEX])
+                X = df[(df[COL_HEAD.LOCATION] == country) & (df[COL_HEAD.SEX] == sex)][
+                    [COL_HEAD.YEAR, COL_HEAD.WEEK, COL_HEAD.MORTALITY]
+                ].values
+                X = X.astype(int)
 
-    const_df = {
-        COL_HEAD.LOCATION: [],
-        COL_HEAD.SEX: [],
-        COL_HEAD.MEAN_OR_EXPECTED_MORTALITY: [],
-        COL_HEAD.MORTALITY: [],
-        COL_HEAD.EXCESS_MORTALITY: [],
-        COL_HEAD.STANDARD_DEVIATION: [],
-    }
+                total_excess, sum_expected, sum_actual, total_excess_std = self.predict(X)
 
-    for _, country in enumerate(countries):
-        for _, sex in enumerate(sexes):
+                const_df[COL_HEAD.LOCATION].append(country)
+                const_df[COL_HEAD.SEX].append(sex)
+                const_df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY].append(sum_expected)
+                const_df[COL_HEAD.MORTALITY].append(sum_actual)
+                const_df[COL_HEAD.EXCESS_MORTALITY_BASE].append(total_excess)
+                const_df[COL_HEAD.STANDARD_DEVIATION].append(total_excess_std)
 
-            X = df[(df[COL_HEAD.LOCATION] == country) & (df[COL_HEAD.SEX] == sex)][
-                [COL_HEAD.YEAR, COL_HEAD.WEEK, COL_HEAD.MORTALITY]
-            ].values
-            X = X.astype(int)
+        return pd.DataFrame(const_df)
 
-            total_excess, sum_expected, sum_actual, total_excess_std = predict(X)
+    @staticmethod
+    def _add_significance(df: pd.DataFrame) -> pd.DataFrame:
+        df[COL_HEAD.Z_SCORE] = df.apply(lambda x: x[COL_HEAD.EXCESS_MORTALITY_BASE] / x[COL_HEAD.STANDARD_DEVIATION],
+                                        axis=1)
+        df[COL_HEAD.IS_SIGNIFICANT] = df.apply(lambda x: is_significant(x[COL_HEAD.Z_SCORE]), axis=1)
 
-            const_df[COL_HEAD.LOCATION].append(country)
-            const_df[COL_HEAD.SEX].append(sex)
-            const_df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY].append(sum_expected)
-            const_df[COL_HEAD.MORTALITY].append(sum_actual)
-            const_df[COL_HEAD.EXCESS_MORTALITY].append(total_excess)
-            const_df[COL_HEAD.STANDARD_DEVIATION].append(total_excess_std)
+        return df
 
-    return pd.DataFrame(const_df)
+    @staticmethod
+    def _add_zscore_pred_int(df: pd.DataFrame):
+        df[COL_HEAD.CONFIDENCE_INTERVAL] = df.apply(
+            lambda x: 1.96 * x[COL_HEAD.STANDARD_DEVIATION],
+            axis=1).round(1)
 
+        return df
 
+    @staticmethod
+    def _add_mean_mort_boundaries(df: pd.DataFrame):
+        """
+
+        :return:
+        """
+        df[COL_HEAD.LB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] - df[COL_HEAD.CONFIDENCE_INTERVAL]
+        df[COL_HEAD.UB_MEAN_MORTALITY] = df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] + df[COL_HEAD.CONFIDENCE_INTERVAL]
+
+        return df
+
+    @staticmethod
+    def _add_pscore(df: pd.DataFrame):
+        """
+
+        :param df:
+        :param analyze_year:
+        :return:
+        """
+        df[COL_HEAD.P_SCORE] = df.apply(
+            lambda x:
+            (
+                    (x[COL_HEAD.MORTALITY] - x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY])
+                    /
+                    x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY]
+            ) * 100
+            if x[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY] != 0
+            else 0,
+            axis=1).round(1)
+
+        df[COL_HEAD.P_SCORE_FLUCTUATION] = df.apply(
+            lambda x:
+            x[COL_HEAD.P_SCORE]
+            -
+            (
+                    (
+                            (x[COL_HEAD.MORTALITY] - x[COL_HEAD.UB_MEAN_MORTALITY])
+                            / x[COL_HEAD.UB_MEAN_MORTALITY]
+                    )
+                    * 100
+            )
+            if x[COL_HEAD.UB_MEAN_MORTALITY] != 0
+            else nan,
+            axis=1).round(1)
+
+        return df
+
+    @staticmethod
+    def _concat_column_vals(df: pd.DataFrame, main_col, additional_col, brackets: List):
+        return df[main_col].map(str) + brackets[0] + df[additional_col].map(str) + brackets[1]
+
+    def _add_formatted_cols(self, df: pd.DataFrame):
+        df = df.round(1)
+
+        df[COL_HEAD.MEAN_MORTALITY_DECORATED] = self._concat_column_vals(df,
+                                                                         COL_HEAD.MEAN_OR_EXPECTED_MORTALITY,
+                                                                         COL_HEAD.CONFIDENCE_INTERVAL,
+                                                                         [' (±', ')'])
+
+        df[COL_HEAD.EXCESS_MORTALITY_DECORATED] = self._concat_column_vals(df,
+                                                                           COL_HEAD.EXCESS_MORTALITY_BASE,
+                                                                           COL_HEAD.CONFIDENCE_INTERVAL,
+                                                                           [' (±', ')'])
+
+        df[COL_HEAD.P_SCORE_DECORATED] = self._concat_column_vals(df,
+                                                                  COL_HEAD.P_SCORE,
+                                                                  COL_HEAD.P_SCORE_FLUCTUATION,
+                                                                  ['% (±', '%)'])
+
+        return df
+
+    def add_excess_mort_calcs(self, df):
+        df = self._add_significance(df)
+        df = self._add_zscore_pred_int(df)
+        df = self._add_mean_mort_boundaries(df)
+        df = self._add_pscore(df)
+        df = self._add_formatted_cols(df)
+        return df
