@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/code_base/ensure_correct_bg.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

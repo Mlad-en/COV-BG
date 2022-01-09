@@ -1,14 +1,32 @@
 from os import path
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 
 from code_base.data_savers.file_extensions import FILE_EXT_TYPE
 
 
+class NameFile:
+
+    @staticmethod
+    def generate_name(args):
+        name = '_'.join([str(el) for el in args])
+
+        return name
+
+    @staticmethod
+    def get_age_els(age_groups: List):
+        if len(age_groups) == 1 and age_groups[0] == 'Total':
+            return 'Total'
+        if len(age_groups) == 1:
+            return age_groups[0]
+        if len(age_groups) > 1:
+            first_el = age_groups[0].split('-')[0]
+            second_el = age_groups[-1].split('-')[1]
+            return first_el + '-' + second_el
+
+
 class SaveFile:
-    def __init__(self):
-        pass
 
     @staticmethod
     def generate_file_path(location: str, file_name: str, method: str) -> str:
@@ -73,3 +91,13 @@ class SaveFile:
                 datafrm.to_excel(writer, sheet_name=sheet_name, index=False, encoding='utf-8-sig')
 
         return file_path
+
+    @staticmethod
+    def prep_multisheet_xlsx(df: pd.DataFrame, split_df_on_column: str) -> Dict[str, pd.DataFrame]:
+
+        col_on = df[split_df_on_column].unique()
+        dfs = {}
+        for col_val in col_on:
+            dfs[col_val] = df[df[split_df_on_column] == col_val].copy()
+
+        return dfs

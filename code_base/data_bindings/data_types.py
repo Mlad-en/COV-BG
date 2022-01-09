@@ -28,3 +28,8 @@ class EurostatDataSets(Enum):
     MORTALITY_BY_SEX_AGE_COUNTRY = auto()
     MORTALITY_BY_SEX_AGE_REGION = auto()
     POP_BY_SEX_AGE_COUNTRY = auto()
+
+
+class WHODataSets(Enum):
+
+    LIFE_EXPECTANCY_BY_AGE_SEX = auto()

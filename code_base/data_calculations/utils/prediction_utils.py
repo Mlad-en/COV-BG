@@ -132,11 +132,11 @@ def generate_std(all_mort, prev_years, train_on, predict_for, time_frame_pys):
 
 
 def is_significant(num):
-    if num > 2:
+    if np.isnan(num):
+        return 'Undetermined'
+    if num > 1.96:
         return 'Significant Increase'
-    if num < -2:
+    if num < -1.96:
         return 'Significant Decrease'
-    else:
+    if abs(num) < 1.96:
         return 'Not Significant'
-
-

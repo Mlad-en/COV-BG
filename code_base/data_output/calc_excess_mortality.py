@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from code_base.data_calculations.calc_excess_mortality_meanstats import CalculateEurostatExcessMortalityMean, \
-    CalculateEurostatExcessMortalityToPopulation
+from code_base.data_calculations.calc_excess_mortality_meanstats import CalculateEurostatExcessMortalityMean
 from code_base.data_calculations.calc_excess_mortality_projected import CalculateExcessMortalityPredicted
 from code_base.data_wrangling.wrangling_info.eurostat_wrangling_info import EurostatWranglingInfo
 from code_base.data_wrangling.wrangling_info.infostat_wrangling_info import InfostatWranglingInfo
@@ -115,7 +114,6 @@ class CalcEUCountryPop(CalculationsBase):
                                                       group_by=grouping)
 
     def calculate(self, clean_data, age_groups: List, sex_groups: List, group_by: str = 'sl'):
-
         """
         :param clean_data:
         :param age_groups:
@@ -146,7 +144,6 @@ class CalcBGRegionPop(CalculationsBase):
                                                       group_by=grouping)
 
     def calculate(self, clean_data, age_groups: List, sex_groups: List, group_by: str = 'sl'):
-
         """
         :param clean_data:
         :param age_groups:
@@ -222,7 +219,7 @@ class CalcExcessMortalityPredicted(CalculationsBase):
                                                       years=years)
 
     def calculate(self, clean_data, age_groups: List, sex_groups: List, start_week: int,
-                  end_week: Optional[int] = None):
+                  end_week: Optional[int] = None, group_by: str = 'slw'):
 
         """
 
@@ -231,34 +228,16 @@ class CalcExcessMortalityPredicted(CalculationsBase):
         :param sex_groups:
         :param start_week:
         :param end_week:
+        :param group_by: Options are: 'all', 'slw'. Default is 'slw'.
         :return:
         """
 
-        wrangling_strategy = self._wrangling_strategy(age_groups, sex_groups, 'slw',
+        wrangling_strategy = self._wrangling_strategy(age_groups, sex_groups, group_by,
                                                       start_week, self.all_years, end_week)
 
         data = wrangling_strategy.filter_data(clean_data)
         data = wrangling_strategy.group_data(data)
-        data = self.mortality_calculations.get_predicted_mortality(data, self.all_years)
+        data = self.mortality_calculations.get_predicted_mortality(data, self.all_years, group_by)
         data = self.mortality_calculations.add_excess_mort_calcs(data)
 
         return data
-
-
-if __name__ == '__main__':
-    from code_base.data_source.get_source_data import get_source_data
-    from code_base.data_bindings.data_types import InfostatDataSets, EurostatDataSets
-
-    age = ['Total']
-    sex = ['Total', 'Male', 'Female']
-    region = 'BG'
-    start_week = 10
-    group_mort = 'slw'
-    max_year = 2020
-    years = [2015, 2016, 2017, 2018, 2019, max_year]
-
-    mort_type = EurostatDataSets.MORTALITY_BY_SEX_AGE_COUNTRY
-    bg_mort_data = get_source_data(mort_type, analyze_years=years)
-    excess_mort = CalcExcessMortalityPredicted(data_type=mort_type, all_years=years)
-    calc_mort = excess_mort.calculate(bg_mort_data, age, sex, start_week)
-    calc_mort.to_csv('ensure_correct.csv', index=False, encoding='utf-8-sig')
