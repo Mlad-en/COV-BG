@@ -1,12 +1,14 @@
-from code_base.data_bindings.data_types import InfostatDataSets, EurostatDataSets
+from code_base.data_bindings.data_types import InfostatDataSets, EurostatDataSets, WHODataSets
 from code_base.data_cleaners.cleaning_info.eurostat_cleaning_info import EurostatCleaningInfo
 from code_base.data_cleaners.cleaning_info.infostat_cleaning_info import InfostatCleaningInfo
+from code_base.data_cleaners.cleaning_info.who_cleaning_info import WHOCleaningInfo
 
 
 def clean_data(data_type, data, **params):
     mapping = {
         InfostatDataSets: InfostatCleaningInfo,
         EurostatDataSets: EurostatCleaningInfo,
+        WHODataSets:      WHOCleaningInfo,
     }
 
     data_type_class = data_type.__class__

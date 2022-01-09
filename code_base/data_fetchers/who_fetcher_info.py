@@ -14,11 +14,11 @@ class WHOIntDataFetcherInfo:
 
     PAGES = {
         WHODataSets.LIFE_EXPECTANCY_BY_AGE_SEX:
-            '/gho/athena/data/GHO/LIFE_0000000035.csv?filter=REGION:EUR;YEAR:###YEAR###',
+            '/gho/athena/data/GHO/LIFE_0000000035.csv?filter=REGION:EUR;YEAR:2019',
     }
 
 
-class WHOIntFileInfo:
+class WHOFileInfo:
     """
 
     """
