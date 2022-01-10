@@ -6,7 +6,7 @@ import pandas as pd
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as COL_HEAD
 from code_base.data_wrangling.filters.filter_specifications import (AgeSpecification,
                                                                     SexSpecification,
-                                                                    LocationSpecification,
+                                                                    LocationExcludeSpecification,
                                                                     Specification,
                                                                     AndSpecification,
                                                                     FilterData)
@@ -35,7 +35,7 @@ class PopBySexAgeLocationWranglingStrategy(WranglingStrategyBase):
     def _full_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
-                LocationSpecification(self.location)]
+                LocationExcludeSpecification(self.location)]
 
         return args
 

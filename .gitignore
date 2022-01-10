@@ -2,4 +2,4 @@
 /data_source/Population/.ipynb_checkpoints/
 /prelim_analysis/
 
-geckodriver.log
+*.log

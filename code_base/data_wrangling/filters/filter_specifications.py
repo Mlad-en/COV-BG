@@ -29,12 +29,20 @@ class SexSpecification(Specification):
         return list(df[~df[COL_HEAD.SEX].isin(self.sex_groups)].index)
 
 
-class LocationSpecification(Specification):
+class LocationExcludeSpecification(Specification):
     def __init__(self, locations: List):
         self.locations = locations
 
     def is_satisfied(self, df) -> List:
         return list(df[df[COL_HEAD.LOCATION].isin(self.locations)].index)
+
+
+class LocationIncludeSpecification(Specification):
+    def __init__(self, locations: List):
+        self.locations = locations
+
+    def is_satisfied(self, df) -> List:
+        return list(df[~df[COL_HEAD.LOCATION].isin(self.locations)].index)
 
 
 class WeekStartSpecification(Specification):
@@ -71,6 +79,14 @@ class WeekRangeSpecification(Specification):
 
     def is_satisfied(self, df):
         return list(df[~df[COL_HEAD.WEEK].isin(self.weeks)].index)
+
+
+class AreaSpecification(Specification):
+    def __init__(self, areas: List):
+        self.areas = areas
+
+    def is_satisfied(self, df):
+        return list(df[df['Area'].isin(self.areas)].index)
 
 
 class AndSpecification(Specification):

@@ -28,7 +28,7 @@ def save_file(data: pd.DataFrame, file_type, file_subtype, year: Union[str, int]
     data_to_save = save_data.prep_multisheet_xlsx(data, 'Sex')
 
     file_location_helper = BaseFolderStructure()
-    file_location = file_location_helper.get_folder_location(file_type, file_subtype, year)
+    file_location = file_location_helper.get_output_folder_location(file_type, file_subtype, year)
     save_data.save_multisheet_xlsx(data_to_save, file_location, file_name)
 
 

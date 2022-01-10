@@ -1,12 +1,12 @@
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS as HEADERS
-from code_base.data_bindings.sex_translations import SEX_BINDINGS as SEXES, INFOSTAT_BG_SEX_BINDINGS
+from code_base.data_bindings.sex_translations import SEX_BINDINGS as SEXES, InfostatBGSexBindings
 
 
 class InfostatHeaders:
-    FEMALE_BG = INFOSTAT_BG_SEX_BINDINGS.FEMALE
+    FEMALE_BG = InfostatBGSexBindings.FEMALE
     FEMALE_EN = SEXES.FEMALE
 
-    MALE_BG = INFOSTAT_BG_SEX_BINDINGS.MALE
+    MALE_BG = InfostatBGSexBindings.MALE
     MALE_EN = SEXES.MALE
 
     AGE = HEADERS.AGE

@@ -1,14 +1,16 @@
-from code_base.data_bindings.data_types import InfostatDataSets, EurostatDataSets, WHODataSets
+from code_base.data_bindings import data_types
 from code_base.data_cleaners.cleaning_info.eurostat_cleaning_info import EurostatCleaningInfo
 from code_base.data_cleaners.cleaning_info.infostat_cleaning_info import InfostatCleaningInfo
+from code_base.data_cleaners.cleaning_info.local_cleaning_info import LocalFilesCleaningInfo
 from code_base.data_cleaners.cleaning_info.who_cleaning_info import WHOCleaningInfo
 
 
 def clean_data(data_type, data, **params):
     mapping = {
-        InfostatDataSets: InfostatCleaningInfo,
-        EurostatDataSets: EurostatCleaningInfo,
-        WHODataSets:      WHOCleaningInfo,
+        data_types.InfostatDataSets: InfostatCleaningInfo,
+        data_types.EurostatDataSets: EurostatCleaningInfo,
+        data_types.WHODataSets:      WHOCleaningInfo,
+        data_types.LocalDataSets:    LocalFilesCleaningInfo,
     }
 
     data_type_class = data_type.__class__

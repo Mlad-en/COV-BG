@@ -4,7 +4,7 @@ class SEX_BINDINGS:
     TOTAL = 'Total'
 
 
-class INFOSTAT_BG_SEX_BINDINGS:
+class InfostatBGSexBindings:
     MALE = 'Мъже'
     FEMALE = 'Жени'
 
@@ -19,4 +19,10 @@ WHO_SEX_CONVERSION = {
     'MLE': SEX_BINDINGS.MALE,
     'FMLE': SEX_BINDINGS.FEMALE,
     'BTSX': SEX_BINDINGS.TOTAL
+}
+
+UN_DECODE_SEX_GROUPS = {
+    'Both Sexes': SEX_BINDINGS.TOTAL,
+    'Male': SEX_BINDINGS.MALE,
+    'Female': SEX_BINDINGS.FEMALE,
 }

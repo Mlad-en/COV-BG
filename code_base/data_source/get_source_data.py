@@ -1,4 +1,4 @@
-from code_base.data_bindings.data_types import CoronaVirusBGDataSets, InfostatDataSets, EurostatDataSets, WHODataSets
+from code_base.data_bindings import data_types
 from code_base.data_cleaners.clean_data import clean_data
 from code_base.data_fetchers.fetch_data import fetch_data
 from code_base.data_scrapers.scrape_data import scrape_data
@@ -6,10 +6,11 @@ from code_base.data_scrapers.scrape_data import scrape_data
 
 def get_raw_source_data(data_type, **additional_params):
     mapping = {
-        CoronaVirusBGDataSets: scrape_data,
-        InfostatDataSets: scrape_data,
-        EurostatDataSets: fetch_data,
-        WHODataSets: fetch_data
+        data_types.CoronaVirusBGDataSets: scrape_data,
+        data_types.InfostatDataSets: scrape_data,
+        data_types.EurostatDataSets: fetch_data,
+        data_types.WHODataSets: fetch_data,
+        data_types.LocalDataSets: fetch_data,
     }
     data_type = data_type
     data_type_class = data_type.__class__

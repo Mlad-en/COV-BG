@@ -5,8 +5,9 @@ from typing import Optional
 import pandas as pd
 import requests
 
-from code_base.data_bindings.data_types import WHODataSets
+from code_base.data_bindings.data_types import WHODataSets, LocalDataSets
 from code_base.data_fetchers.eurostat_fetcher_info import EurostatFileInfo
+from code_base.data_fetchers.local_starage_info import LocalFileInfo
 from code_base.data_fetchers.who_fetcher_info import WHOFileInfo
 
 
@@ -46,5 +47,17 @@ class FetchWHOData(FetchData):
         req = requests.get(self.url)
         data = StringIO(req.text)
         df = pd.read_csv(data, encoding='utf-8-sig')
+
+        return df
+
+
+class FetchLocalData(FetchData):
+
+    def __init__(self, local_data_type: LocalDataSets):
+        self.file_info = LocalFileInfo(local_data_type)
+        self.file = self.file_info.file_path
+
+    def get_data(self):
+        df = pd.read_csv(self.file, encoding='utf-8-sig')
 
         return df

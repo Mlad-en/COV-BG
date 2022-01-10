@@ -1,4 +1,4 @@
-from code_base.data_bindings.sex_translations import INFOSTAT_BG_SEX_BINDINGS, SEX_BINDINGS
+from code_base.data_bindings.sex_translations import InfostatBGSexBindings, SEX_BINDINGS
 
 DECODE_BUTTONS = {
     'request': {
@@ -53,10 +53,10 @@ FIND_TEXT = {
 
 WAIT_FOR_DEMO_ELEMENTS_BG = [
     {'locator_type': FIND_TEXT['locator_type'],
-     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.FEMALE)
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', InfostatBGSexBindings.FEMALE)
      },
     {'locator_type': FIND_TEXT['locator_type'],
-     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', INFOSTAT_BG_SEX_BINDINGS.MALE)
+     'obj': FIND_TEXT['obj'].replace('REPLACE_TEXT', InfostatBGSexBindings.MALE)
      },
 ]
 

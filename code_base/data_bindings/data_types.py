@@ -33,3 +33,11 @@ class EurostatDataSets(Enum):
 class WHODataSets(Enum):
 
     LIFE_EXPECTANCY_BY_AGE_SEX = auto()
+
+
+class LocalDataSets(Enum):
+
+    UNDATA_Population = auto()
+    Italy_Population = auto()
+
+

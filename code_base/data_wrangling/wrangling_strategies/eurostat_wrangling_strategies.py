@@ -46,7 +46,7 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
     def _endweek_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
-                LocationSpecification(self.location),
+                LocationExcludeSpecification(self.location),
                 WeekStartSpecification(self.start_week),
                 WeekEndSpecification(self.end_week)]
 
@@ -56,7 +56,7 @@ class EurostatExcessMortalityWranglingStrategy(WranglingStrategyBase):
     def _no_end_week_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
-                LocationSpecification(self.location),
+                LocationExcludeSpecification(self.location),
                 WeekStartSpecification(self.start_week),
                 NaturalWeekEndSpecification(self.natural_cut_off)]
 
@@ -94,7 +94,7 @@ class EurostatEUPopulationWranglingStrategy(WranglingStrategyBase):
     def _full_specs(self) -> List:
         args = [AgeSpecification(self.age),
                 SexSpecification(self.sex),
-                LocationSpecification(self.location)]
+                LocationExcludeSpecification(self.location)]
 
         return args
 

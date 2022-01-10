@@ -7,7 +7,8 @@ class BaseFolderStructure:
     _PROJECT_FOLDER = Path(__file__).parent.parent.parent
 
     _CODE_BASE_FOLDER = path.join(_PROJECT_FOLDER, 'code_base')
-    DATA_SOURCE_FOLDER = path.join(_PROJECT_FOLDER, 'data_source')
+
+    # Output paths
     DATA_OUTPUT_FOLDER = path.join(_PROJECT_FOLDER, 'data_output')
 
     _EXCESS_MORTALITY = path.join(DATA_OUTPUT_FOLDER, 'Excess Mortality')
@@ -24,8 +25,13 @@ class BaseFolderStructure:
     _PYLL_COUNTRIES = path.join(_PYLL, 'Countries (BG, CZ)')
     _PYLL_EU = path.join(_PYLL, 'PYLL_EU')
 
+    # Source paths
+    DATA_SOURCE_FOLDER = path.join(_PROJECT_FOLDER, 'data_source')
+    EU_POPULATION = path.join(DATA_SOURCE_FOLDER, 'Population')
+
+
     @classmethod
-    def get_folder_location(cls, file_type, file_sub_type, year):
+    def get_output_folder_location(cls, file_type, file_sub_type, year):
         """
         
         :param file_type: Options for 
@@ -35,16 +41,19 @@ class BaseFolderStructure:
         """
 
         locations = {
+            # Expected Mortality - Mean Mode
             'e': {
                 'r': cls._REGIONS,
                 'm': cls._MUNICIPALITIES,
                 'c': cls._COUNTRIES,
             },
+            # Expected Mortality - Prediction Mode
             'ep': {
                 'r': cls._REGIONS_EM,
                 'm': cls._MUNICIPALITIES_EM,
                 'c': cls._COUNTRIES_EM,
             },
+            # PYLL -
             'p': {
                 'c': cls._PYLL_COUNTRIES,
                 'e': cls._PYLL_EU,
