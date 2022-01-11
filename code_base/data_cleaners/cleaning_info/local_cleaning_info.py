@@ -1,8 +1,8 @@
 from code_base.data_bindings.age_group_translations import UN_DECODE_AGE_GROUPS
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS
 from code_base.data_bindings.data_types import LocalDataSets
-from code_base.data_bindings.sex_translations import UN_DECODE_SEX_GROUPS
-from code_base.data_cleaners.cleaning_params.local_cleaning_params import UnDataHeaders
+from code_base.data_bindings.sex_translations import UN_DECODE_SEX_GROUPS, ITALY_DECODE_SEX_GROUPS
+from code_base.data_cleaners.cleaning_params.local_cleaning_params import UnDataHeaders, ItalyPopDataHeaders
 from code_base.data_cleaners.cleaning_strategies import local_cleaning_strategies
 
 
@@ -14,7 +14,7 @@ class LocalCleaningConfig:
 
     CLEANING_STRATEGIES = {
         LocalDataSets.UNDATA_Population: local_cleaning_strategies.UnPopulationCleaningStategy,
-        LocalDataSets.Italy_Population: '',
+        LocalDataSets.Italy_Population: local_cleaning_strategies.ItalyPopulationCleaningStategy,
     }
 
     COLUMNS_TO_RETAIN = {
@@ -23,7 +23,11 @@ class LocalCleaningConfig:
                                           UnDataHeaders.AGE,
                                           UnDataHeaders.POPULATION_PRE,
                                           UnDataHeaders.AREA],
-        LocalDataSets.Italy_Population: [],
+
+        LocalDataSets.Italy_Population: [ItalyPopDataHeaders.AGE,
+                                         ItalyPopDataHeaders.MEN,
+                                         ItalyPopDataHeaders.WOMEN,
+                                         ItalyPopDataHeaders.TOTAL],
     }
 
     COLUMNS_TO_RENAME = {
@@ -32,7 +36,10 @@ class LocalCleaningConfig:
             UnDataHeaders.POPULATION_PRE: COLUMN_HEADING_CONSTS.POPULATION,
         },
         LocalDataSets.Italy_Population: {
-
+            ItalyPopDataHeaders.AGE:   COLUMN_HEADING_CONSTS.AGE,
+            # ItalyPopDataHeaders.MEN :   COLUMN_HEADING_CONSTS.MALE_EN,
+            # ItalyPopDataHeaders.WOMEN : COLUMN_HEADING_CONSTS.FEMALE_EN,
+            # ItalyPopDataHeaders.TOTAL : COLUMN_HEADING_CONSTS.TOTAL,
         }
     }
 
@@ -42,7 +49,7 @@ class LocalCleaningConfig:
             COLUMN_HEADING_CONSTS.SEX: UN_DECODE_SEX_GROUPS,
         },
         LocalDataSets.Italy_Population: {
-
+            COLUMN_HEADING_CONSTS.SEX: ITALY_DECODE_SEX_GROUPS
         }
     }
 
@@ -70,7 +77,7 @@ class LocalFilesCleaningInfo:
         cleaning_params = {
             'columns_to_retain': retain,
             'columns_to_rename': rename,
-            'translate_values': translate
+            'translate_values':  translate
         }
 
         return cleaning_params

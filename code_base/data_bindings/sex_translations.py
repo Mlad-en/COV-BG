@@ -16,13 +16,20 @@ EUROSTAT_SEX_CONVERSION = {
 }
 
 WHO_SEX_CONVERSION = {
-    'MLE': SEX_BINDINGS.MALE,
+    'MLE':  SEX_BINDINGS.MALE,
     'FMLE': SEX_BINDINGS.FEMALE,
     'BTSX': SEX_BINDINGS.TOTAL
 }
 
 UN_DECODE_SEX_GROUPS = {
     'Both Sexes': SEX_BINDINGS.TOTAL,
-    'Male': SEX_BINDINGS.MALE,
-    'Female': SEX_BINDINGS.FEMALE,
+    'Male':       SEX_BINDINGS.MALE,
+    'Female':     SEX_BINDINGS.FEMALE,
+}
+
+ITALY_DECODE_SEX_GROUPS = {
+    'Totale Maschi':           SEX_BINDINGS.MALE,
+    'Totale Maschi e Femmine': SEX_BINDINGS.TOTAL,
+    'Totale Femmine':          SEX_BINDINGS.FEMALE
+
 }
