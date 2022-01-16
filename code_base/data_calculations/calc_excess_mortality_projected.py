@@ -17,10 +17,9 @@ from code_base.data_calculations.utils.prediction_utils import (get_prev_years_i
 
 class CalculateExcessMortalityPredicted:
 
-    def get_const_df(self, add_age: bool):
+    def get_const_df(self, add_age: bool, add_week: bool):
 
-        if not add_age:
-            return {
+        dct = {
                 COL_HEAD.LOCATION: [],
                 COL_HEAD.SEX: [],
                 COL_HEAD.MEAN_OR_EXPECTED_MORTALITY: [],
@@ -29,16 +28,13 @@ class CalculateExcessMortalityPredicted:
                 COL_HEAD.STANDARD_DEVIATION: [],
             }
 
-        else:
-            return {
-                COL_HEAD.LOCATION: [],
-                COL_HEAD.SEX: [],
-                COL_HEAD.AGE: [],
-                COL_HEAD.MEAN_OR_EXPECTED_MORTALITY: [],
-                COL_HEAD.MORTALITY: [],
-                COL_HEAD.EXCESS_MORTALITY_BASE: [],
-                COL_HEAD.STANDARD_DEVIATION: [],
-            }
+        if add_week:
+            dct[COL_HEAD.WEEK] = []
+
+        if add_age:
+            dct[COL_HEAD.AGE] = []
+
+        return dct
 
     @staticmethod
     def predict(all_mort: ndarray) -> tuple:
@@ -81,7 +77,7 @@ class CalculateExcessMortalityPredicted:
         countries = unique(df[COL_HEAD.LOCATION])
         sexes = unique(df[COL_HEAD.SEX])
 
-        const_df = self.get_const_df(False)
+        const_df = self.get_const_df(False, False)
 
         for _, country in enumerate(countries):
             for _, sex in enumerate(sexes):
@@ -106,7 +102,7 @@ class CalculateExcessMortalityPredicted:
         sexes = unique(df[COL_HEAD.SEX])
         ages = unique(df[COL_HEAD.AGE])
 
-        const_df = self.get_const_df(True)
+        const_df = self.get_const_df(True, False)
 
         for _, country in enumerate(countries):
             for _, sex in enumerate(sexes):
@@ -128,16 +124,41 @@ class CalculateExcessMortalityPredicted:
 
         return const_df
 
+    def get_predicted_slw_mortality(self, df: pd.DataFrame):
+        countries = unique(df[COL_HEAD.LOCATION])
+        sexes = unique(df[COL_HEAD.SEX])
+        weeks = unique(df[COL_HEAD.WEEK])
+
+        const_df = self.get_const_df(False, True)
+
+        for _, country in enumerate(countries):
+            for _, sex in enumerate(sexes):
+                for _, week in enumerate(weeks):
+                    X = df[(df[COL_HEAD.LOCATION] == country) & (df[COL_HEAD.SEX] == sex)
+                           & (df[COL_HEAD.WEEK] == week)][[COL_HEAD.YEAR, COL_HEAD.WEEK, COL_HEAD.MORTALITY]].values
+                    X = X.astype(int)
+                    total_excess, sum_expected, sum_actual, total_excess_std = self.predict(X)
+
+                    const_df[COL_HEAD.LOCATION].append(country)
+                    const_df[COL_HEAD.SEX].append(sex)
+                    const_df[COL_HEAD.WEEK].append(week)
+                    const_df[COL_HEAD.MEAN_OR_EXPECTED_MORTALITY].append(sum_expected)
+                    const_df[COL_HEAD.MORTALITY].append(sum_actual)
+                    const_df[COL_HEAD.EXCESS_MORTALITY_BASE].append(total_excess)
+                    const_df[COL_HEAD.STANDARD_DEVIATION].append(total_excess_std)
+
+        return const_df
+
     def get_predicted_mortality(self, df: pd.DataFrame, analyze_years: List, group_by: str) -> pd.DataFrame:
         """
 
         :param df:
         :param analyze_years:
-        :param group_by: Options are 'slw' or 'all'.
+        :param group_by: Options are 'sl', 'sla' and 'all'
         :return:
         """
 
-        if group_by == 'slw':
+        if group_by == 'sl':
             df = df.melt(id_vars=[COL_HEAD.LOCATION, COL_HEAD.WEEK, COL_HEAD.SEX],
                          value_vars=analyze_years,
                          var_name=COL_HEAD.YEAR,
@@ -147,7 +168,7 @@ class CalculateExcessMortalityPredicted:
             data = self.get_predicted_ls_mortality(df)
             return pd.DataFrame(data)
 
-        if group_by == 'all':
+        if group_by == 'sla':
             df = df.melt(id_vars=[COL_HEAD.LOCATION, COL_HEAD.WEEK, COL_HEAD.SEX, COL_HEAD.AGE],
                          value_vars=analyze_years,
                          var_name=COL_HEAD.YEAR,
@@ -155,6 +176,16 @@ class CalculateExcessMortalityPredicted:
             df[COL_HEAD.YEAR] = df[COL_HEAD.YEAR].astype(int)
 
             data = self.get_predicted_lsa_mortality(df)
+            return pd.DataFrame(data)
+
+        if group_by == 'slw':
+            df = df.melt(id_vars=[COL_HEAD.LOCATION, COL_HEAD.WEEK, COL_HEAD.SEX],
+                         value_vars=analyze_years,
+                         var_name=COL_HEAD.YEAR,
+                         value_name=COL_HEAD.MORTALITY)
+            df[COL_HEAD.YEAR] = df[COL_HEAD.YEAR].astype(int)
+
+            data = self.get_predicted_slw_mortality(df)
             return pd.DataFrame(data)
 
     @staticmethod

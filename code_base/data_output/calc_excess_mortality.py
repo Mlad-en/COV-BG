@@ -219,7 +219,7 @@ class CalcExcessMortalityPredicted(CalculationsBase):
                                                       years=years)
 
     def calculate(self, clean_data, age_groups: List, sex_groups: List, start_week: int,
-                  end_week: Optional[int] = None, group_by: str = 'slw'):
+                  end_week: Optional[int] = None, group_by: str = 'slw', predict_on: str = 'sl'):
 
         """
 
@@ -228,7 +228,8 @@ class CalcExcessMortalityPredicted(CalculationsBase):
         :param sex_groups:
         :param start_week:
         :param end_week:
-        :param group_by: Options are: 'all', 'slw'. Default is 'slw'.
+        :param group_by: Options are 'slw' and 'all'. Default is 'slw'.
+        :param predict_on:
         :return:
         """
 
@@ -237,7 +238,7 @@ class CalcExcessMortalityPredicted(CalculationsBase):
 
         data = wrangling_strategy.filter_data(clean_data)
         data = wrangling_strategy.group_data(data)
-        data = self.mortality_calculations.get_predicted_mortality(data, self.all_years, group_by)
+        data = self.mortality_calculations.get_predicted_mortality(data, self.all_years, predict_on)
         data = self.mortality_calculations.add_excess_mort_calcs(data)
 
         return data

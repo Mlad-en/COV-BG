@@ -55,7 +55,7 @@ class CalcPYLL(SaveFileMixin):
         mort_type = EurostatDataSets.MORTALITY_BY_SEX_AGE_COUNTRY
         eu_mort_data = get_source_data(mort_type, analyze_years=self.years)
         excess_mort = CalcExcessMortalityPredicted(data_type=mort_type, all_years=self.years)
-        calc_mort = excess_mort.calculate(eu_mort_data, ages_all, sex, self.from_week, group_by='all')
+        calc_mort = excess_mort.calculate(eu_mort_data, ages_all, sex, self.from_week, group_by='all', predict_on='sla')
         relevant_cols = [COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION,
                          COL_HEAD.EXCESS_MORTALITY_BASE, COL_HEAD.CONFIDENCE_INTERVAL, COL_HEAD.IS_SIGNIFICANT]
         calc_mort.drop(columns=[col for col in calc_mort if col not in relevant_cols], inplace=True)
@@ -363,26 +363,34 @@ class CalcPYLL(SaveFileMixin):
 
 
 if __name__ == '__main__':
+    from code_base.data_bindings.age_group_translations import AGE_BINDINGS
 
     # Calculate PYLL and ASYR without 90+ age group
     c = CalcPYLL(years=[2015, 2016, 2017, 2018, 2019, 2020])
-    pyll = c.calculate_yll_all_ages()
-    c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
-    wyll = c.calculate_yll_all_ages(ages=age_15_64, mode='WYLL')
-    c.save_df_to_file(wyll, c.file_location, c.gen_file_name(age=age_15_64, mode='WYLL'), method='excel')
-    asyr = c.calculate_asyr()
-    c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
-
-    # Calculate PYLL and ASYR with 90+ age group with data for 85+ provided by the WHO
-    c = CalcPYLL(over_90_included=True, years=[2015, 2016, 2017, 2018, 2019, 2020])
-    pyll = c.calculate_yll_all_ages(ages=ages_all)
-    c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
-    asyr = c.calculate_asyr(ages=ages_all)
-    c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
-
-    # Calculate PYLL and ASYR with 90+ age group with static life expectancy data for 90+ (4 years; hard-coded)
-    c = CalcPYLL(over_90_included=True, static_lf_over_90=True, years=[2015, 2016, 2017, 2018, 2019, 2020])
-    pyll = c.calculate_yll_all_ages(ages=ages_all)
-    c.save_df_to_file(pyll, c.file_location, c.gen_file_name(more_info='_static_over_90'), method='excel')
-    asyr = c.calculate_asyr(ages=ages_all)
-    c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR', more_info='_static_over_90'), method='excel')
+    print(c.get_excess_mortality.columns)
+    print(c.get_life_exp_eu.columns)
+    print(c.get_pop_data([AGE_BINDINGS.AGE_00_04, AGE_BINDINGS.AGE_05_09, AGE_BINDINGS.AGE_10_14, AGE_BINDINGS.AGE_15_19,
+            AGE_BINDINGS.AGE_20_24, AGE_BINDINGS.AGE_25_29, AGE_BINDINGS.AGE_30_34, AGE_BINDINGS.AGE_35_39,
+            AGE_BINDINGS.AGE_40_44, AGE_BINDINGS.AGE_45_49, AGE_BINDINGS.AGE_50_54, AGE_BINDINGS.AGE_55_59,
+            AGE_BINDINGS.AGE_60_64, AGE_BINDINGS.AGE_65_69, AGE_BINDINGS.AGE_70_74, AGE_BINDINGS.AGE_75_79,
+            AGE_BINDINGS.AGE_80_84, AGE_BINDINGS.AGE_85_89, AGE_BINDINGS.AGE_GE90], ['Total']))
+    # pyll = c.calculate_yll_all_ages()
+    # c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
+    # wyll = c.calculate_yll_all_ages(ages=age_15_64, mode='WYLL')
+    # c.save_df_to_file(wyll, c.file_location, c.gen_file_name(age=age_15_64, mode='WYLL'), method='excel')
+    # asyr = c.calculate_asyr()
+    # c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
+    #
+    # # Calculate PYLL and ASYR with 90+ age group with data for 85+ provided by the WHO
+    # c = CalcPYLL(over_90_included=True, years=[2015, 2016, 2017, 2018, 2019, 2020])
+    # pyll = c.calculate_yll_all_ages(ages=ages_all)
+    # c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
+    # asyr = c.calculate_asyr(ages=ages_all)
+    # c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR'), method='excel')
+    #
+    # # Calculate PYLL and ASYR with 90+ age group with static life expectancy data for 90+ (4 years; hard-coded)
+    # c = CalcPYLL(over_90_included=True, static_lf_over_90=True, years=[2015, 2016, 2017, 2018, 2019, 2020])
+    # pyll = c.calculate_yll_all_ages(ages=ages_all)
+    # c.save_df_to_file(pyll, c.file_location, c.gen_file_name(more_info='_static_over_90'), method='excel')
+    # asyr = c.calculate_asyr(ages=ages_all)
+    # c.save_df_to_file(asyr, c.file_location, c.gen_file_name(mode='ASYR', more_info='_static_over_90'), method='excel')

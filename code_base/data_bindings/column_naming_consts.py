@@ -32,3 +32,10 @@ class COLUMN_HEADING_CONSTS:
     P_SCORE = 'P_Score'
     P_SCORE_FLUCTUATION = P_SCORE + '_fluctuation'
     P_SCORE_DECORATED = P_SCORE + ' ±'
+
+    PYLL_MEAN = 'PYLL_mean'
+    PYLL_FLUCTUATION = 'PYLL_fluctuation'
+    PYLL_AVG_MEAN = 'PYLL_average_mean'
+    PYLL_AVG_FLUC = 'PYLL_fluctuation'
+    PYLL_STD_MEAN = 'PYLL_STD_MEAN'
+    PYLL_STD_FLUC = 'PYLL_STD_FLUC'

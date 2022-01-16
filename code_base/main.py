@@ -89,18 +89,60 @@ def eu_generate_pred_exc_mort(years: List[int], age: List[List[str]], sex: List[
         save_file(data, 'ep', 'c', year, name_file)
 
 
+def eu_generate_pred_perweek_exc_mort(years: List[int], age: List[List[str]], sex: List[str], start_week: int):
+    mort_type = EurostatDataSets.MORTALITY_BY_SEX_AGE_COUNTRY
+    eu_mort_data = get_source_data(mort_type, analyze_years=years)
+
+    for age_group in age:
+        excess_mort = CalcExcessMortalityPredicted(data_type=mort_type, all_years=years)
+        calc_mort = excess_mort.calculate(eu_mort_data, age_group, sex, start_week, group_by='slw', predict_on='slw')
+
+        year = max(years)
+
+        name_file = {
+            'type': 'Predicted_WEEKLY_Excess_Mortality_EU',
+            'year': year,
+            'sex': sex,
+            'age': age_group,
+        }
+
+        save_file(calc_mort, 'ep', 'c', year, name_file)
+
+
+def bg_generate_pred_perweek_exc_mort(years: List[int], age: List[List[str]], sex: List[str], start_week: int):
+    mort_type = EurostatDataSets.MORTALITY_BY_SEX_AGE_REGION
+    bg_mort_data = get_source_data(mort_type, analyze_years=years, region='BG')
+
+    for age_group in age:
+        excess_mort = CalcExcessMortalityPredicted(data_type=mort_type, all_years=years)
+        calc_mort = excess_mort.calculate(bg_mort_data, age_group, sex, start_week, group_by='slw', predict_on='slw')
+
+        year = max(years)
+
+        name_file = {
+            'type': 'Predicted_WEEKLY_Excess_Mortality_BG',
+            'year': year,
+            'sex': sex,
+            'age': age_group,
+        }
+
+        save_file(calc_mort, 'ep', 'r', year, name_file)
+
+
 if __name__ == '__main__':
 
 
-    age = [
-        ['(30-34)', '(35-39)'],
-        ['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)'],
-        ['(65-69)'],
-    ]
+    # age = [
+    #     ['(30-34)', '(35-39)'],
+    #     ['(40-44)', '(45-49)', '(50-54)', '(55-59)', '(60-64)'],
+    #     ['(65-69)'],
+    # ]
     sex = ['Total', 'Male', 'Female']
     region = 'BG'
     start_week = 10
     years = [2015, 2016, 2017, 2018, 2019, 2020]
 
-    bg_generate_pred_exc_mort(years, age, sex, start_week)
-    eu_generate_pred_exc_mort(years, age, sex, start_week)
+    # bg_generate_pred_exc_mort(years, age, sex, start_week)
+    # eu_generate_pred_exc_mort(years, age, sex, start_week)
+    age = [['Total']]
+    bg_generate_pred_perweek_exc_mort(years, age, sex, start_week)

@@ -57,7 +57,7 @@ class ItalyPopulationCleaningStategy(LocalBaseCleaningStrategy):
         data_to_clean = convert_cols_to_rows(self.data_to_clean,
                                              ItalyPopDataHeaders.TRANSLATE_AGE,
                                              ItalyPopDataHeaders.TRANSLATE_SEX,
-                                             ItalyPopDataHeaders.LIFE_EXPECTANCY)
+                                             ItalyPopDataHeaders.POPULATION)
 
         return data_to_clean
 
@@ -70,4 +70,7 @@ class ItalyPopulationCleaningStategy(LocalBaseCleaningStrategy):
         self.data_to_clean.rename(columns=self.columns_to_rename, inplace=True)
         self.data_to_clean = self._covert_cols_to_rows()
         self.data_to_clean = self._decode_demo_values()
+        drop_total = self.data_to_clean[self.data_to_clean[ItalyPopDataHeaders.TRANSLATE_AGE] == 'Totale'].index
+        self.data_to_clean.drop(drop_total, axis=0, inplace=True)
+        self.data_to_clean[ItalyPopDataHeaders.TRANSLATE_AGE] = self.data_to_clean[ItalyPopDataHeaders.TRANSLATE_AGE].map(int)
         return self.data_to_clean

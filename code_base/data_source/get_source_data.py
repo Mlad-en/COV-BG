@@ -26,3 +26,14 @@ def get_source_data(data_type, **additional_params):
     raw_data = get_raw_source_data(data_type, **additional_params)
     data = clean_data(data_type, raw_data, **additional_params)
     return data
+
+
+if __name__ == '__main__':
+    from code_base.data_wrangling.wrangling_strategies.local_file_wrangling_strategies import \
+        ItalyPopulationWranglingStrategy
+    data = get_source_data(data_types.LocalDataSets.Italy_Population)
+    wrangle_data = ItalyPopulationWranglingStrategy(['(85-89)', '(90+)'], ['Total'])
+    group_df = wrangle_data.group_data(data)
+    filtered_df = wrangle_data.filter_data(group_df)
+    filtered_df["LOCATION"] = 'Italy'
+    print(filtered_df)
