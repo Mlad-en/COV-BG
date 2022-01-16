@@ -1,0 +1,85 @@
+Location,Sex,Mortality
+Blagoevgrad,Female,133
+Burgas,Female,119
+Dobrich,Female,77
+Gabrovo,Female,53
+Haskovo,Female,88
+Kardzhali,Female,32
+Kyustendil,Female,55
+Lovech,Female,42
+Montana,Female,76
+Pazardzhik,Female,128
+Pernik,Female,46
+Pleven,Female,96
+Plovdiv,Female,298
+Razgrad,Female,73
+Ruse,Female,146
+Shumen,Female,98
+Silistra,Female,60
+Sliven,Female,99
+Smolyan,Female,76
+Sofia,Female,112
+Sofia (stolitsa),Female,308
+Stara Zagora,Female,97
+Targovishte,Female,81
+Varna,Female,217
+Veliko Tarnovo,Female,109
+Vidin,Female,48
+Vratsa,Female,68
+Yambol,Female,55
+Blagoevgrad,Male,209
+Burgas,Male,183
+Dobrich,Male,106
+Gabrovo,Male,94
+Haskovo,Male,143
+Kardzhali,Male,56
+Kyustendil,Male,126
+Lovech,Male,81
+Montana,Male,118
+Pazardzhik,Male,226
+Pernik,Male,100
+Pleven,Male,165
+Plovdiv,Male,495
+Razgrad,Male,100
+Ruse,Male,225
+Shumen,Male,130
+Silistra,Male,78
+Sliven,Male,134
+Smolyan,Male,108
+Sofia,Male,176
+Sofia (stolitsa),Male,609
+Stara Zagora,Male,173
+Targovishte,Male,77
+Varna,Male,291
+Veliko Tarnovo,Male,168
+Vidin,Male,73
+Vratsa,Male,105
+Yambol,Male,76
+Blagoevgrad,Total,342
+Burgas,Total,302
+Dobrich,Total,183
+Gabrovo,Total,147
+Haskovo,Total,231
+Kardzhali,Total,88
+Kyustendil,Total,181
+Lovech,Total,123
+Montana,Total,194
+Pazardzhik,Total,354
+Pernik,Total,146
+Pleven,Total,261
+Plovdiv,Total,793
+Razgrad,Total,173
+Ruse,Total,371
+Shumen,Total,228
+Silistra,Total,138
+Sliven,Total,233
+Smolyan,Total,184
+Sofia,Total,288
+Sofia (stolitsa),Total,917
+Stara Zagora,Total,270
+Targovishte,Total,158
+Varna,Total,508
+Veliko Tarnovo,Total,277
+Vidin,Total,121
+Vratsa,Total,173
+Yambol,Total,131
