@@ -9,12 +9,17 @@ class LocalDataFetcherInfo:
 
     """
 
-    MAIN_FOLDER = BaseFolderStructure.EU_POPULATION
-
     AVAILABLE_DATASETS = {
         LocalDataSets.UNDATA_Population,
         LocalDataSets.Italy_Population,
+        LocalDataSets.Covid_Mortality_BG
 
+    }
+
+    FOLDER_LOCATION = {
+        LocalDataSets.UNDATA_Population: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.Italy_Population: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.Covid_Mortality_BG: BaseFolderStructure.COVID_MORTALITY_BULGARIA,
     }
 
     FILES = {
@@ -22,6 +27,8 @@ class LocalDataFetcherInfo:
             'UNDATA_Population by age, sex and urban-rural residence_2019.csv',
         LocalDataSets.Italy_Population:
             'demo.istat - Resident population by age, sex and marital status on 1st January 2020.csv',
+        LocalDataSets.Covid_Mortality_BG:
+        ''
     }
 
 
@@ -45,6 +52,10 @@ class LocalFileInfo:
         """
         :return:
         """
-        url = LocalDataFetcherInfo.MAIN_FOLDER
-        file = os.path.join(url, LocalDataFetcherInfo.FILES[self._file_type])
+        folder = LocalDataFetcherInfo.FOLDER_LOCATION[self._file_type]
+        file = os.path.join(folder, LocalDataFetcherInfo.FILES[self._file_type])
         return file
+
+
+if __name__ == '__main__':
+    print(LocalFileInfo(LocalDataSets.Covid_Mortality_BG).file_path)

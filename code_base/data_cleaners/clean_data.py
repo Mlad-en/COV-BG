@@ -1,4 +1,5 @@
 from code_base.data_bindings import data_types
+from code_base.data_cleaners.cleaning_info.cvbg_cleaning_info import CVBGCleaningInfo
 from code_base.data_cleaners.cleaning_info.eurostat_cleaning_info import EurostatCleaningInfo
 from code_base.data_cleaners.cleaning_info.infostat_cleaning_info import InfostatCleaningInfo
 from code_base.data_cleaners.cleaning_info.local_cleaning_info import LocalFilesCleaningInfo
@@ -11,6 +12,7 @@ def clean_data(data_type, data, **params):
         data_types.EurostatDataSets: EurostatCleaningInfo,
         data_types.WHODataSets:      WHOCleaningInfo,
         data_types.LocalDataSets:    LocalFilesCleaningInfo,
+        data_types.CoronaVirusBGDataSets: CVBGCleaningInfo,
     }
 
     data_type_class = data_type.__class__

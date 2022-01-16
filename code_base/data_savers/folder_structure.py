@@ -28,6 +28,9 @@ class BaseFolderStructure:
     # Source paths
     DATA_SOURCE_FOLDER = path.join(_PROJECT_FOLDER, 'data_source')
     EU_POPULATION = path.join(DATA_SOURCE_FOLDER, 'Population')
+    COVID_MORTALITY = path.join(DATA_SOURCE_FOLDER, 'Covid Mortality')
+    COVID_MORTALITY_BULGARIA = path.join(DATA_SOURCE_FOLDER, 'Bulgaria/Combined')
+    COVID_MORTALITY_Czechia = path.join(DATA_SOURCE_FOLDER, 'Czechia')
 
 
     @classmethod

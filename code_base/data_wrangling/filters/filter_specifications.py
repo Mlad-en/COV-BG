@@ -45,6 +45,14 @@ class LocationIncludeSpecification(Specification):
         return list(df[~df[COL_HEAD.LOCATION].isin(self.locations)].index)
 
 
+class YearSpecification(Specification):
+    def __init__(self, year: int):
+        self.year = year
+
+    def is_satisfied(self, df) -> List:
+        return list(df[~(df[COL_HEAD.YEAR] == self.year)].index)
+
+
 class WeekStartSpecification(Specification):
     def __init__(self, week_start: int):
         self.week_start = week_start

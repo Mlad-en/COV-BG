@@ -1,5 +1,4 @@
 from code_base.data_bindings.data_types import CoronaVirusBGDataSets as DtTp
-from code_base.data_scrapers.scrape_cv_bg.scrape_cv_bg_params import *
 
 
 class CoronaVirusBGConfig:
@@ -22,19 +21,6 @@ class CoronaVirusBGConfig:
         DtTp.VACCINATED_DECEASED:     'e6a72183-28e0-486a-b4e4-b5db8b60a900',
     }
 
-    RESOURCE_HEADERS = {
-        DtTp.GENERAL:                 CV_BG_GENERAL_DISTRIBUTION_STATISTICS,
-        DtTp.BY_REGION:               CV_BG_DISTRIBUTION_BY_REGION,
-        DtTp.BY_AGE_GROUP:            CV_BG_DISTRIBUTION_BY_AGE,
-        DtTp.BY_TEST_TYPE:            CV_BG_DISTRIBUTION_BY_TESTS,
-        DtTp.DECEASED_BY_SEX_AGE:     CV_BG_DECEASED_BY_GENDER_SEX,
-        DtTp.VACCINATED_INFECTED:     CV_BG_INFECTED_VACCINATED,
-        DtTp.VACCINATED_HOSPITALIZED: CV_BG_HOSPITALIZED_VACCINATED,
-        DtTp.VACCINATED_ICU:          CV_BG_ICU_VACCINATED,
-        DtTp.VACCINATED_DECEASED:     CV_BG_DECEASED_VACCINATED,
-    }
-
-
 class CoronaVirusBGFileInfo:
 
     def __init__(self, data_type):
@@ -46,7 +32,3 @@ class CoronaVirusBGFileInfo:
         resource = CoronaVirusBGConfig.RESOURCES[self._data_type]
         file_extension = '/csv'
         return basic_url + resource + file_extension
-
-    @property
-    def data_headers(self):
-        return CoronaVirusBGConfig.RESOURCE_HEADERS[self._data_type]

@@ -39,5 +39,5 @@ class LocalDataSets(Enum):
 
     UNDATA_Population = auto()
     Italy_Population = auto()
-
+    Covid_Mortality_BG = auto()
 
