@@ -28,7 +28,7 @@ class LocalDataFetcherInfo:
         LocalDataSets.Italy_Population:
             'demo.istat - Resident population by age, sex and marital status on 1st January 2020.csv',
         LocalDataSets.Covid_Mortality_BG:
-        ''
+        'Cov-19_mort_reg.csv'
     }
 
 
@@ -55,7 +55,3 @@ class LocalFileInfo:
         folder = LocalDataFetcherInfo.FOLDER_LOCATION[self._file_type]
         file = os.path.join(folder, LocalDataFetcherInfo.FILES[self._file_type])
         return file
-
-
-if __name__ == '__main__':
-    print(LocalFileInfo(LocalDataSets.Covid_Mortality_BG).file_path)

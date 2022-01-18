@@ -3,7 +3,7 @@ from code_base.data_bindings.data_types import CoronaVirusBGDataSets
 from code_base.data_cleaners.cleaning_strategies import cvbg_cleaning_strategy
 
 
-class WHOCleaningConfig:
+class CVBGCleaningConfig:
     AVAILABLE_DATASETS = {
         CoronaVirusBGDataSets.GENERAL,
         CoronaVirusBGDataSets.BY_REGION,
@@ -33,7 +33,11 @@ class WHOCleaningConfig:
     }
 
     COLUMNS_TO_RETAIN = {
-        CoronaVirusBGDataSets.GENERAL: [],
+        CoronaVirusBGDataSets.GENERAL: ['Week',
+                                        'Year',
+                                        'Cases_Last_24_Cases',
+                                        'Deceased_Last_24_Cases',
+                                        'Tests_Last_24_Done'],
     }
 
 
@@ -44,17 +48,22 @@ class CVBGCleaningInfo:
         self._data_type = data_type
 
     def _get_columns_to_rename(self):
-        return WHOCleaningConfig.COLUMNS_TO_RENAME[self._data_type]
+        return CVBGCleaningConfig.COLUMNS_TO_RENAME[self._data_type]
+
+    def _get_columns_to_retain(self):
+        return CVBGCleaningConfig.COLUMNS_TO_RETAIN[self._data_type]
 
     def cleaning_params(self, **kwargs):
         rename = self._get_columns_to_rename()
+        retain = self._get_columns_to_retain()
 
         cleaning_params = {
             'columns_to_rename': rename,
+            'columns_to_retain': retain,
         }
 
         return cleaning_params
 
     @property
     def cleaning_strategy(self):
-        return WHOCleaningConfig.CLEANING_STRATEGIES[self._data_type]
+        return CVBGCleaningConfig.CLEANING_STRATEGIES[self._data_type]

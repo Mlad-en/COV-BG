@@ -4,9 +4,13 @@ from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS a
 from code_base.data_wrangling.groupings.group_eurostat_data import GroupData
 
 
-class GroupByAgeSexItalyPopulation(GroupData):
+class GroupCVBGGeneralData(GroupData):
 
     def group_data(self):
-        self.df = self.df.groupby([bins, COL_HEAD.SEX]).agg({COL_HEAD.POPULATION: 'sum'})
+        self.df = self.df.groupby([COL_HEAD.YEAR, COL_HEAD.WEEK]).agg({
+            'Cases_Last_24_Cases': 'sum',
+            'Tests_Last_24_Done': 'sum',
+            'Deceased_Last_24_Cases': 'sum',
+                                                                       })
         self.df.reset_index(inplace=True)
         return self.df

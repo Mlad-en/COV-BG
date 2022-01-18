@@ -58,8 +58,6 @@ if __name__ == '__main__':
     pop_dt = pop.get_agg_sex_cntry_pop(sex=sex)
 
     # Generate Data about Excess mortality for the EU
-
-    # Generate Data about Excess mortality for Bulgaria by Region
     years = [2020, 2021]
     exclude_locations = ['Armenia', 'Albania', 'Germany', 'Georgia', 'United Kingdom']
 
