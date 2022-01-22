@@ -61,3 +61,10 @@ class FetchLocalData(FetchData):
         df = pd.read_csv(self.file, encoding='utf-8-sig')
 
         return df
+
+
+if __name__ == '__main__':
+    from code_base.data_bindings import data_types
+
+    pop_type = data_types.EurostatDataSets.POP_BY_SEX_AGE_COUNTRY
+    print(FetchEuroStatData(pop_type).get_data())

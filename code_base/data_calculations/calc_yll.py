@@ -8,6 +8,9 @@ from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS a
 
 class CalcYLLBase(ABC):
 
+    def __init__(self, mode):
+        self.mode = mode
+
     @staticmethod
     def add_mean_yll(df):
         df[COL_HEAD.PYLL_MEAN] = df.apply(
@@ -49,23 +52,21 @@ class CalcYLLBase(ABC):
             axis=1).round(2)
         return df
 
-    @staticmethod
-    def add_std_mean_yll(df, mode: str = 'PYLL'):
+    def add_std_mean_yll(self, df):
         """
 
         :param df:
-        :param mode:
         :return:
         """
 
         df[COL_HEAD.PYLL_STD_MEAN] = df.apply(
             lambda x:
-            (x[f'{mode}_mean'] / x[COL_HEAD.POPULATION]) * (10 ** 5),
+            (x[f'{self.mode}_mean'] / x[COL_HEAD.POPULATION]) * (10 ** 5),
             axis=1).round(1)
 
         df[COL_HEAD.PYLL_STD_FLUC] = df.apply(
             lambda x:
-            (x[f'{mode}_fluc'] / x[COL_HEAD.POPULATION]) * (10 ** 5),
+            (x[f'{self.mode}_fluc'] / x[COL_HEAD.POPULATION]) * (10 ** 5),
             axis=1).round(1)
 
         return df
@@ -81,6 +82,7 @@ class CalcPYLL(CalcYLLBase):
         self.es_population = es_population
         self.es_mortality_df = es_mortality_df
         self.who_life_expectancy = who_life_expectancy
+        super().__init__("PYLL")
 
     @property
     def mortality_to_life_expectancy(self):
@@ -94,3 +96,10 @@ class CalcPYLL(CalcYLLBase):
         pyll = self.es_mortality_df.merge(self.who_life_expectancy, on=self.mortality_to_life_expectancy)
         pyll = self.add_mean_yll(pyll)
 
+
+if __name__ == '__main__':
+    from code_base.data_bindings import data_types
+    from code_base.data_source.get_source_data import get_source_data
+
+    pop_type = data_types.EurostatDataSets.POP_BY_SEX_AGE_COUNTRY
+    eu_pop_data = get_source_data(pop_type)

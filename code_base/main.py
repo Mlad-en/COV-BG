@@ -150,4 +150,5 @@ def bg_generate_pred_perweek_exc_mort(years: List[int], start_week: int):
 
 
 if __name__ == '__main__':
-    eu_generate_pred_perweek_exc_mort([2015, 2016, 2017, 2018, 2019, 2020], 23)
+    eu_generate_pred_exc_mort([2015, 2016, 2017, 2018, 2019, 2020], [['Total']], ['Female', 'Male', 'Total'], 10)
+    bg_generate_pred_exc_mort([2015, 2016, 2017, 2018, 2019, 2020], [['Total']], ['Female', 'Male', 'Total'], 10)
