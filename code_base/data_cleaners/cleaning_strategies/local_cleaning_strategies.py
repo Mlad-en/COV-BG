@@ -74,3 +74,23 @@ class ItalyPopulationCleaningStategy(LocalBaseCleaningStrategy):
         self.data_to_clean.drop(drop_total, axis=0, inplace=True)
         self.data_to_clean[ItalyPopDataHeaders.TRANSLATE_AGE] = self.data_to_clean[ItalyPopDataHeaders.TRANSLATE_AGE].map(int)
         return self.data_to_clean
+
+
+class CVDsEuropeCleaningStategy(LocalBaseCleaningStrategy):
+
+    def __init__(self, data_to_clean, **kwargs):
+        self.bindings = kwargs
+        self.data_to_clean = data_to_clean
+        self.columns_to_retain = self.bindings['columns_to_retain']
+        self.columns_to_rename = self.bindings['columns_to_rename']
+        self.translate_values = self.bindings['translate_values']
+
+    def _filter_columns(self) -> pd.DataFrame:
+        data_to_clean = filter_columns(self.data_to_clean, self.columns_to_retain)
+        return data_to_clean
+
+    def clean_data(self):
+        self.data_to_clean.rename(columns=self.columns_to_rename, inplace=True)
+        self.data_to_clean = self._filter_columns()
+        self.data_to_clean.dropna(how='any', axis=0, inplace=True)
+        return self.data_to_clean

@@ -26,3 +26,8 @@ def get_source_data(data_type, **additional_params):
     raw_data = get_raw_source_data(data_type, **additional_params)
     data = clean_data(data_type, raw_data, **additional_params)
     return data
+
+
+if __name__ == '__main__':
+    data = get_source_data(data_types.LocalDataSets.CVD_Europe)
+    print(data)
