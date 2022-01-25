@@ -7,6 +7,7 @@ class COLUMN_HEADING_CONSTS:
     MORTALITY = 'Mortality'
     POPULATION = 'Population'
     STANDARD_POPULATION = 'Standard_Population'
+    POPULATION_PER_100_000 = 'Pop_per_100000'
     LIFE_EXPECTANCY = 'Life_Expectancy'
     YEAR = 'Year'
     WEEK = 'Week'
@@ -43,6 +44,8 @@ class COLUMN_HEADING_CONSTS:
     PYLL_STD_MEAN = 'PYLL_STD_MEAN'
     PYLL_STD_FLUC = 'PYLL_STD_FLUC'
     PYLL_STD_MEAN_DECORATED = 'PYLL_STD_MEAN' + ' ±'
+    PYLL_RATE = 'PYLL_Rate'
+    PYLL_RATE_FLUC = 'PYLL_Rate_fluc'
 
     WYLL_MEAN = 'WYLL_mean'
     WYLL_FLUCTUATION = 'WYLL_fluctuation'
@@ -53,3 +56,6 @@ class COLUMN_HEADING_CONSTS:
     WYLL_STD_MEAN = 'WYLL_STD_MEAN'
     WYLL_STD_FLUC = 'WYLL_STD_FLUC'
     WYLL_STD_MEAN_DECORATED = 'WYLL_STD_MEAN' + ' ±'
+
+    ASYR = 'ASYR'
+    ASYR_FLUC = 'ASYR_FLUC'

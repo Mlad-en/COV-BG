@@ -105,11 +105,11 @@ class CalcWYLL:
         exc_mort = self.exc_mort.merge(self.life_expectancy, on=[COL_HEAD.AGE])
         exc_mort = self._add_mean_yll(exc_mort)
         exc_mort = self._filter_non_significant_mortality(exc_mort)
-        exc_mort = self._add_avg_yll(exc_mort)
         exc_mort = self._agg_exc_mort_yll(exc_mort)
-        exc_mort = exc_mort.merge(full_pop, on=[COL_HEAD.SEX, COL_HEAD.LOCATION])
+        exc_mort = self._add_avg_yll(exc_mort)
 
+        exc_mort = exc_mort.merge(full_pop, on=[COL_HEAD.SEX, COL_HEAD.LOCATION])
         exc_mort = self._add_std_mean_yll(exc_mort)
         exc_mort = self._merge_mean_fluc_cols(exc_mort)
 
-        return exc_mort.sort_values([COL_HEAD.WYLL_MEAN, COL_HEAD.SEX], ascending=False)
+        return exc_mort.sort_values([COL_HEAD.WYLL_STD_MEAN, COL_HEAD.SEX], ascending=False)

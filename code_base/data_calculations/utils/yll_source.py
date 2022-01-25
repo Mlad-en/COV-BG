@@ -131,7 +131,8 @@ class YLLLifeExpectancy:
 
 class YLLWorkingYears:
 
-    def gen_working_years(self) -> pd.DataFrame:
+    @staticmethod
+    def gen_working_years() -> pd.DataFrame:
         working_years = {
             'Age': ['(15-19)', '(20-24)', '(25-29)', '(30-34)', '(35-39)', '(40-44)', '(45-49)', '(50-54)', '(55-59)',
                     '(60-64)'],
@@ -139,3 +140,19 @@ class YLLWorkingYears:
             'Working_Years_Left_Mean': [47, 42.5, 37.5, 32.5, 27.5, 22.5, 17.5, 12.5, 7.5, 2.5]
         }
         return pd.DataFrame(working_years)
+
+
+class GetStandardPopulation:
+
+    def __init__(self, sex: List[str]):
+        self.sex = sex
+
+    def get_std_population(self) -> pd.DataFrame:
+        std_pop = get_source_data(data_types.LocalDataSets.STD_POPULATION_EU)
+        wrangler = LocalStorageWranglingInfo(data_types.LocalDataSets.STD_POPULATION_EU).wrangling_strategy
+
+        pop_wrangling = wrangler(self.sex)
+        std_pop = pop_wrangling.filter_data(std_pop)
+        std_pop = pop_wrangling.group_data(std_pop)
+
+        return std_pop
