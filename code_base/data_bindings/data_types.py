@@ -38,7 +38,8 @@ class WHODataSets(Enum):
 class LocalDataSets(Enum):
 
     UNDATA_Population = auto()
-    Italy_Population = auto()
-    Covid_Mortality_BG = auto()
-    CVD_Europe = auto()
+    ITALY_POPULATION = auto()
+    COVID_MORTALITY_BG = auto()
+    STD_POPULATION_EU = auto()
+    CVD_EUROPE = auto()
 

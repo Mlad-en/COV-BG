@@ -1,7 +1,7 @@
-from code_base.data_bindings.age_group_translations import UN_DECODE_AGE_GROUPS
+from code_base.data_bindings import age_group_translations
 from code_base.data_bindings.column_naming_consts import COLUMN_HEADING_CONSTS
 from code_base.data_bindings.data_types import LocalDataSets
-from code_base.data_bindings.sex_translations import UN_DECODE_SEX_GROUPS, ITALY_DECODE_SEX_GROUPS
+from code_base.data_bindings import sex_translations
 from code_base.data_cleaners.cleaning_params import local_cleaning_params as lcp
 from code_base.data_cleaners.cleaning_strategies import local_cleaning_strategies
 
@@ -9,14 +9,15 @@ from code_base.data_cleaners.cleaning_strategies import local_cleaning_strategie
 class LocalCleaningConfig:
     AVAILABLE_DATASETS = {
         LocalDataSets.UNDATA_Population,
-        LocalDataSets.Italy_Population,
-        LocalDataSets.CVD_Europe,
+        LocalDataSets.ITALY_POPULATION,
+        LocalDataSets.CVD_EUROPE,
     }
 
     CLEANING_STRATEGIES = {
         LocalDataSets.UNDATA_Population: local_cleaning_strategies.UnPopulationCleaningStategy,
-        LocalDataSets.Italy_Population: local_cleaning_strategies.ItalyPopulationCleaningStategy,
-        LocalDataSets.CVD_Europe: local_cleaning_strategies.CVDsEuropeCleaningStategy,
+        LocalDataSets.ITALY_POPULATION:  local_cleaning_strategies.ItalyPopulationCleaningStategy,
+        LocalDataSets.CVD_EUROPE:        local_cleaning_strategies.CVDsEuropeCleaningStategy,
+        LocalDataSets.STD_POPULATION_EU: local_cleaning_strategies.StandardizedEUPopulationCleaningStrategy,
     }
 
     COLUMNS_TO_RETAIN = {
@@ -26,12 +27,12 @@ class LocalCleaningConfig:
                                           lcp.UnDataHeaders.POPULATION_PRE,
                                           lcp.UnDataHeaders.AREA],
 
-        LocalDataSets.Italy_Population: [lcp.ItalyPopDataHeaders.AGE,
+        LocalDataSets.ITALY_POPULATION: [lcp.ItalyPopDataHeaders.AGE,
                                          lcp.ItalyPopDataHeaders.MEN,
                                          lcp.ItalyPopDataHeaders.WOMEN,
                                          lcp.ItalyPopDataHeaders.TOTAL],
 
-        LocalDataSets.CVD_Europe: [lcp.CVDsEuropeHeaders.Location,
+        LocalDataSets.CVD_EUROPE: [lcp.CVDsEuropeHeaders.Location,
                                    lcp.CVDsEuropeHeaders.Deaths_Raw,
                                    lcp.CVDsEuropeHeaders.Share_Total,
                                    lcp.CVDsEuropeHeaders.Share_Men,
@@ -48,10 +49,10 @@ class LocalCleaningConfig:
             lcp.UnDataHeaders.LOCATION_PRE: COLUMN_HEADING_CONSTS.LOCATION,
             lcp.UnDataHeaders.POPULATION_PRE: COLUMN_HEADING_CONSTS.POPULATION,
         },
-        LocalDataSets.Italy_Population: {
+        LocalDataSets.ITALY_POPULATION: {
             lcp.ItalyPopDataHeaders.AGE: COLUMN_HEADING_CONSTS.AGE,
         },
-        LocalDataSets.CVD_Europe: {
+        LocalDataSets.CVD_EUROPE: {
             lcp.CVDsEuropeHeaders.Translate_Location:           lcp.CVDsEuropeHeaders.Location,
             lcp.CVDsEuropeHeaders.Translate_Deaths_Raw:         lcp.CVDsEuropeHeaders.Deaths_Raw,
             lcp.CVDsEuropeHeaders.Translate_Share_Total:        lcp.CVDsEuropeHeaders.Share_Total,
@@ -62,17 +63,22 @@ class LocalCleaningConfig:
             lcp.CVDsEuropeHeaders.Translate_Standardized_Women: lcp.CVDsEuropeHeaders.Standardized_Women,
             lcp.CVDsEuropeHeaders.Translate_Standardized_LT65:  lcp.CVDsEuropeHeaders.Standardized_LT65,
             lcp.CVDsEuropeHeaders.Translate_Standardized_GTE65: lcp.CVDsEuropeHeaders.Standardized_GTE65,
-
+        },
+        LocalDataSets.STD_POPULATION_EU: {
+            lcp.StandardPopHeaders.Translate_Pop: lcp.StandardPopHeaders.Standardized_Pop
         }
     }
 
     COLUMNS_TO_TRANSLATE = {
         LocalDataSets.UNDATA_Population: {
-            COLUMN_HEADING_CONSTS.AGE: UN_DECODE_AGE_GROUPS,
-            COLUMN_HEADING_CONSTS.SEX: UN_DECODE_SEX_GROUPS,
+            COLUMN_HEADING_CONSTS.AGE: age_group_translations.UN_DECODE_AGE_GROUPS,
+            COLUMN_HEADING_CONSTS.SEX: sex_translations.UN_DECODE_SEX_GROUPS,
         },
-        LocalDataSets.Italy_Population: {
-            COLUMN_HEADING_CONSTS.SEX: ITALY_DECODE_SEX_GROUPS
+        LocalDataSets.ITALY_POPULATION: {
+            COLUMN_HEADING_CONSTS.SEX: sex_translations.ITALY_DECODE_SEX_GROUPS
+        },
+        LocalDataSets.STD_POPULATION_EU: {
+            COLUMN_HEADING_CONSTS.AGE: age_group_translations.STD_EU_POP_2013_DECODE_AGE
         }
     }
 

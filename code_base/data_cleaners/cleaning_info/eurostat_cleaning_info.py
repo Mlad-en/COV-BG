@@ -1,9 +1,6 @@
 from code_base.data_bindings.data_types import EurostatDataSets as DtTp
 from code_base.data_cleaners.cleaning_params.eurostat_cleaning_params import EurostatCleaningParams
-from code_base.data_cleaners.cleaning_strategies.eurostat_data_cleaning_strategies \
-    import (EurostatExcessMortalityCleaningStrategy,
-            EurostatRegionExcessMortalityCleaningStrategy,
-            EurostatEUPopulationCleaningStrategy)
+from code_base.data_cleaners.cleaning_strategies import eurostat_data_cleaning_strategies
 
 
 class EurostatCleaningConfig:
@@ -14,9 +11,9 @@ class EurostatCleaningConfig:
     }
 
     CLEANING_STRATEGIES = {
-        DtTp.MORTALITY_BY_SEX_AGE_COUNTRY: EurostatExcessMortalityCleaningStrategy,
-        DtTp.MORTALITY_BY_SEX_AGE_REGION: EurostatRegionExcessMortalityCleaningStrategy,
-        DtTp.POP_BY_SEX_AGE_COUNTRY: EurostatEUPopulationCleaningStrategy,
+        DtTp.MORTALITY_BY_SEX_AGE_COUNTRY: eurostat_data_cleaning_strategies.EurostatExcessMortalityCleaningStrategy,
+        DtTp.MORTALITY_BY_SEX_AGE_REGION:  eurostat_data_cleaning_strategies.EurostatRegionExcessMortalityCleaningStrategy,
+        DtTp.POP_BY_SEX_AGE_COUNTRY:       eurostat_data_cleaning_strategies.EurostatEUPopulationCleaningStrategy,
     }
 
     REPLACE_VALUES = {

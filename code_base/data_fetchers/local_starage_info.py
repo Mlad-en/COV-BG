@@ -11,26 +11,28 @@ class LocalDataFetcherInfo:
 
     AVAILABLE_DATASETS = {
         LocalDataSets.UNDATA_Population,
-        LocalDataSets.Italy_Population,
-        LocalDataSets.Covid_Mortality_BG,
-        LocalDataSets.CVD_Europe,
-
+        LocalDataSets.ITALY_POPULATION,
+        LocalDataSets.COVID_MORTALITY_BG,
+        LocalDataSets.CVD_EUROPE,
+        LocalDataSets.STD_POPULATION_EU,
     }
 
     FOLDER_LOCATION = {
         LocalDataSets.UNDATA_Population: BaseFolderStructure.EU_POPULATION,
-        LocalDataSets.Italy_Population: BaseFolderStructure.EU_POPULATION,
-        LocalDataSets.CVD_Europe: BaseFolderStructure.EU_POPULATION,
-        LocalDataSets.Covid_Mortality_BG: BaseFolderStructure.COVID_MORTALITY_BULGARIA,
+        LocalDataSets.ITALY_POPULATION: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.CVD_EUROPE: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.STD_POPULATION_EU: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.COVID_MORTALITY_BG: BaseFolderStructure.COVID_MORTALITY_BULGARIA,
     }
 
     FILES = {
         LocalDataSets.UNDATA_Population:
             'UNDATA_Population by age, sex and urban-rural residence_2019.csv',
-        LocalDataSets.Italy_Population:
+        LocalDataSets.ITALY_POPULATION:
             'demo.istat - Resident population by age, sex and marital status on 1st January 2020.csv',
-        LocalDataSets.CVD_Europe: 'Cardiovascular_diseases_Health_update_2021.csv',
-        LocalDataSets.Covid_Mortality_BG:
+        LocalDataSets.CVD_EUROPE: 'Cardiovascular_diseases_Health_update_2021.csv',
+        LocalDataSets.STD_POPULATION_EU: 'Standard populations - Federal Health Monitoring.csv',
+        LocalDataSets.COVID_MORTALITY_BG:
         'Cov-19_mort_reg.csv'
     }
 

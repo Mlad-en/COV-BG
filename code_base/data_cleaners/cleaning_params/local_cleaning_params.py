@@ -50,3 +50,7 @@ class CVDsEuropeHeaders:
     Standardized_LT65 = 'Per 100_000-LT65'
     Standardized_GTE65 = 'Per 100_000-GTE65'
 
+
+class StandardPopHeaders:
+    Translate_Pop = 'Standard population of Europe 2013 Info'
+    Standardized_Pop = COLUMN_HEADING_CONSTS.STANDARD_POPULATION

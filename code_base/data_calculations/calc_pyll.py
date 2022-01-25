@@ -181,6 +181,8 @@ class CalcPYLL(SaveFileMixin):
         :return:
         """
         year_comp = 'Life_Expectancy' if mode == 'PYLL' else 'Working_Years_Left_Mean'
+        print("Add Mean YLL DF")
+        print(df)
         df[f'{mode}_mean'] = df.apply(
             lambda x: x[year_comp] * x[COL_HEAD.EXCESS_MORTALITY_BASE] if x[COL_HEAD.EXCESS_MORTALITY_BASE] > 0 else 0,
             axis=1).round(1)
@@ -253,11 +255,11 @@ class CalcPYLL(SaveFileMixin):
             raise ValueError('Invalid Mode Argument')
 
         yll_ages = self.get_life_exp_eu if mode == 'PYLL' else self.gen_working_years
-
+        yll_ages.to_csv('yll_ages.csv')
         yll_dt = self.merge_frames(df1=yll_ages,
                                    df2=self.get_excess_mortality,
                                    merge_on=merge_on_lf_exc_mort)
-
+        yll_dt.to_csv('yll_dt.csv')
         yll_dt = self.add_mean_yll(yll_dt, mode)
         yll_dt = self.agg_exc_mort_yll(yll_dt, mode)
         yll_dt = self.add_avg_yll(yll_dt, mode)
@@ -367,13 +369,13 @@ if __name__ == '__main__':
 
     # Calculate PYLL and ASYR without 90+ age group
     c = CalcPYLL(years=[2015, 2016, 2017, 2018, 2019, 2020])
-    print(c.get_excess_mortality.columns)
-    print(c.get_life_exp_eu.columns)
-    print(c.get_pop_data([AGE_BINDINGS.AGE_00_04, AGE_BINDINGS.AGE_05_09, AGE_BINDINGS.AGE_10_14, AGE_BINDINGS.AGE_15_19,
-            AGE_BINDINGS.AGE_20_24, AGE_BINDINGS.AGE_25_29, AGE_BINDINGS.AGE_30_34, AGE_BINDINGS.AGE_35_39,
-            AGE_BINDINGS.AGE_40_44, AGE_BINDINGS.AGE_45_49, AGE_BINDINGS.AGE_50_54, AGE_BINDINGS.AGE_55_59,
-            AGE_BINDINGS.AGE_60_64, AGE_BINDINGS.AGE_65_69, AGE_BINDINGS.AGE_70_74, AGE_BINDINGS.AGE_75_79,
-            AGE_BINDINGS.AGE_80_84, AGE_BINDINGS.AGE_85_89, AGE_BINDINGS.AGE_GE90], ['Total']))
+    c.get_excess_mortality.to_csv('get_excess_mortality.csv')
+    c.get_life_exp_eu.to_csv('get_life_exp_eu.csv')
+    c.get_pop_data([AGE_BINDINGS.AGE_00_04, AGE_BINDINGS.AGE_05_09, AGE_BINDINGS.AGE_10_14, AGE_BINDINGS.AGE_15_19,
+                    AGE_BINDINGS.AGE_20_24, AGE_BINDINGS.AGE_25_29, AGE_BINDINGS.AGE_30_34, AGE_BINDINGS.AGE_35_39,
+                    AGE_BINDINGS.AGE_40_44, AGE_BINDINGS.AGE_45_49, AGE_BINDINGS.AGE_50_54, AGE_BINDINGS.AGE_55_59,
+                    AGE_BINDINGS.AGE_60_64, AGE_BINDINGS.AGE_65_69, AGE_BINDINGS.AGE_70_74, AGE_BINDINGS.AGE_75_79,
+                    AGE_BINDINGS.AGE_80_84, AGE_BINDINGS.AGE_85_89, AGE_BINDINGS.AGE_GE90], ['Total']).to_csv('get_pop_data.csv')
     # pyll = c.calculate_yll_all_ages()
     # c.save_df_to_file(pyll, c.file_location, c.gen_file_name(), method='excel')
     # wyll = c.calculate_yll_all_ages(ages=age_15_64, mode='WYLL')

@@ -6,7 +6,8 @@ class LocalStorageWranglingConfig:
 
     WRANGLING_STRATEGIES = {
         LocalDataSets.UNDATA_Population: local_file_wrangling_strategies.WHOPopulationWranglingStrategy,
-        LocalDataSets.Italy_Population: local_file_wrangling_strategies.ItalyPopulationWranglingStrategy,
+        LocalDataSets.ITALY_POPULATION: local_file_wrangling_strategies.ItalyPopulationWranglingStrategy,
+        LocalDataSets.STD_POPULATION_EU: local_file_wrangling_strategies.StandardEuPopulationWranglingStrategy
 
     }
 

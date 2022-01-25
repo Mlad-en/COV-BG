@@ -72,7 +72,7 @@ UN_DECODE_AGE_GROUPS = {
 
 }
 
-std_eu_pop_2013_decode_age = {
+STD_EU_POP_2013_DECODE_AGE = {
     # Combine 0-4 by decoding under 1 and 1-4 as the same value
     'Under 1 year':            AGE_BINDINGS.AGE_00_04,
     '1 year to under 5 years': AGE_BINDINGS.AGE_00_04,

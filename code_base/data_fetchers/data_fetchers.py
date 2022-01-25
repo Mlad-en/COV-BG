@@ -66,7 +66,7 @@ class FetchLocalData(FetchData):
 if __name__ == '__main__':
     from code_base.data_bindings import data_types
 
-    pop_type = data_types.LocalDataSets.CVD_Europe
+    pop_type = data_types.LocalDataSets.CVD_EUROPE
     data = FetchLocalData(pop_type).get_data()
     data.drop(['Unnamed: 0', 'Unnamed: 1'], inplace=True, axis=1)
     data.dropna(how='all', axis=0, inplace=True)
