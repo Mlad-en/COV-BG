@@ -3,7 +3,7 @@ from code_base.excess_mortality.decode_loc_vars import *
 DECODE_DEMO_COL = {
     'excess_mortality_by_sex_age_country': 'age,sex,unit,geo\\time',
     'excess_mortality_by_sex_age_nuts3': 'unit,sex,age,geo\\time',
-    'europe_population_by_age_and_sex': 'freq;unit;sex;age;geo\TIME_PERIOD'
+    'europe_population_by_age_and_sex': r'freq;unit;sex;age;geo\TIME_PERIOD'
 }
 
 DECODE_DEMO_REPL = {

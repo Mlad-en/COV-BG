@@ -31,7 +31,7 @@ if __name__ == '__main__':
         {'start_date': (2020, 3, 1),
          'end_date': (2020, 12, 31)},
         {'start_date': (2021, 1, 1),
-         'end_date': (2021, 5, 18)},
+         'end_date': (2021, 7, 6)},
         {'start_date': (2020, 3, 1),
          'end_date': (2021, 5, 18)},
     ]
