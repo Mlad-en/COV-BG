@@ -23,6 +23,10 @@ The following publicly available datasets were used for this analysis:
     
     This dataset was used to normalize excess mortality per 100,000 people for EU countries. It was also used to calculate the Potential Years of Life Lost (PYLL) and [Age-Standardized Year Of Life Lost Rate](https://academic.oup.com/ije/article/48/4/1367/5281229#140004792) (ASYR).
 
+    1.4. [Causes of death — diseases of the circulatory system, residents](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Cardiovascular_diseases_statistics#Deaths_from_cardiovascular_diseases) - Dataset contains stadardized death rates per 100,000 people by sex (Female, Male, Total) in the EU.
+
+    This dataset is used to correlate Cardiovascular death rates with excess mortality during the Covid-19 pandemic during the period week 10-53 of 2020.
+
 2. **Infostat Datasets**
 
     2.1. "[POPULATION BY DISTRICTS, AGE, PLACE OF RESIDENCE AND SEX](https://infostat.nsi.bg/infostat/pages/reports/query.jsf?x_2=1168)" - Dataset contains information about Bulgarian region's population partitioned by sex (Female, Male, Total) and by age groups (increments of 5).
@@ -57,3 +61,8 @@ The following publicly available datasets were used for this analysis:
     7.1. [Standard populations used for age standardization in the information system of the Federal Health Monitoring](https://www.gbe-bund.de/gbe/pkg_olap_tables.prc_set_hierlevel?p_uid=gast&p_aid=7584310&p_sprache=E&p_help=2&p_indnr=1000&p_ansnr=76943455&p_version=2&p_dim=D.002&p_dw=40&p_direction=drill) - dataset contains a standardized population across european countries (Standard population of Europe 2013).
 
     Dataset used to calculate ASYR by standardizing EU populations by age group across countries.
+
+
+
+<iframe width="100%" height="800" src="https://ec.europa.eu/eurostat/cache/digpub/ageing/vis/01_07/?country=EU27_2020&lang=en"></iframe>
+
