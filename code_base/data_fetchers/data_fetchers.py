@@ -61,26 +61,3 @@ class FetchLocalData(FetchData):
         df = pd.read_csv(self.file, encoding='utf-8-sig')
 
         return df
-
-
-if __name__ == '__main__':
-    from code_base.data_bindings import data_types
-
-    pop_type = data_types.LocalDataSets.CVD_EUROPE
-    data = FetchLocalData(pop_type).get_data()
-    data.drop(['Unnamed: 0', 'Unnamed: 1'], inplace=True, axis=1)
-    data.dropna(how='all', axis=0, inplace=True)
-    columns = ['Location',
-               'Number of deaths',
-               'Share of deaths-Total',
-               'Share of deaths-Males',
-               'Share of deaths-Females',
-               'Per 100_000-Total',
-               'Per 100_000-Male',
-               'Per 100_000-Females',
-               'Per 100_000-LT65',
-               'Per 100_000-GTE65',
-               ]
-    data.set_axis(columns, axis=1, inplace=True)
-    data = data.iloc[10:40, :]
-    print(data)

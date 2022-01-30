@@ -100,7 +100,7 @@ class CalcWYLL:
 
         return df
 
-    def calculate_wyll_eu(self) -> pd.DataFrame:
+    def calculate(self) -> pd.DataFrame:
         full_pop = self._group_pop(self.full_pop)
         exc_mort = self.exc_mort.merge(self.life_expectancy, on=[COL_HEAD.AGE])
         exc_mort = self._add_mean_yll(exc_mort)

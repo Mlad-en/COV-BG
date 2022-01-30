@@ -1,3 +1,4 @@
+import os
 from os import path
 from typing import Dict, List
 
@@ -22,7 +23,7 @@ class NameFile:
             return age_groups[0]
         if len(age_groups) > 1:
             first_el = age_groups[0].split('-')[0]
-            second_el = age_groups[-1].split('-')[1]
+            second_el = age_groups[-1].split('-')[-1]
             return first_el + '-' + second_el
 
 

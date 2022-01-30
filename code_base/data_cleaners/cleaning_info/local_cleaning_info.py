@@ -8,20 +8,20 @@ from code_base.data_cleaners.cleaning_strategies import local_cleaning_strategie
 
 class LocalCleaningConfig:
     AVAILABLE_DATASETS = {
-        LocalDataSets.UNDATA_Population,
+        LocalDataSets.UNDATA_POPULATION,
         LocalDataSets.ITALY_POPULATION,
         LocalDataSets.CVD_EUROPE,
     }
 
     CLEANING_STRATEGIES = {
-        LocalDataSets.UNDATA_Population: local_cleaning_strategies.UnPopulationCleaningStategy,
+        LocalDataSets.UNDATA_POPULATION: local_cleaning_strategies.UnPopulationCleaningStategy,
         LocalDataSets.ITALY_POPULATION:  local_cleaning_strategies.ItalyPopulationCleaningStategy,
         LocalDataSets.CVD_EUROPE:        local_cleaning_strategies.CVDsEuropeCleaningStategy,
         LocalDataSets.STD_POPULATION_EU: local_cleaning_strategies.StandardizedEUPopulationCleaningStrategy,
     }
 
     COLUMNS_TO_RETAIN = {
-        LocalDataSets.UNDATA_Population: [lcp.UnDataHeaders.LOCATION_PRE,
+        LocalDataSets.UNDATA_POPULATION: [lcp.UnDataHeaders.LOCATION_PRE,
                                           lcp.UnDataHeaders.SEX,
                                           lcp.UnDataHeaders.AGE,
                                           lcp.UnDataHeaders.POPULATION_PRE,
@@ -45,7 +45,7 @@ class LocalCleaningConfig:
     }
 
     COLUMNS_TO_RENAME = {
-        LocalDataSets.UNDATA_Population: {
+        LocalDataSets.UNDATA_POPULATION: {
             lcp.UnDataHeaders.LOCATION_PRE: COLUMN_HEADING_CONSTS.LOCATION,
             lcp.UnDataHeaders.POPULATION_PRE: COLUMN_HEADING_CONSTS.POPULATION,
         },
@@ -70,7 +70,7 @@ class LocalCleaningConfig:
     }
 
     COLUMNS_TO_TRANSLATE = {
-        LocalDataSets.UNDATA_Population: {
+        LocalDataSets.UNDATA_POPULATION: {
             COLUMN_HEADING_CONSTS.AGE: age_group_translations.UN_DECODE_AGE_GROUPS,
             COLUMN_HEADING_CONSTS.SEX: sex_translations.UN_DECODE_SEX_GROUPS,
         },

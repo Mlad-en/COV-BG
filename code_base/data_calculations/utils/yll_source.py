@@ -27,8 +27,8 @@ class YLLPopulation:
         return AGE_BINDINGS.AGE_GE90 in self.ages
 
     def _get_un_population_over_85(self, include_countries: List[str]):
-        un_pop_data = get_source_data(data_types.LocalDataSets.UNDATA_Population)
-        wrangler = LocalStorageWranglingInfo(data_types.LocalDataSets.UNDATA_Population).wrangling_strategy
+        un_pop_data = get_source_data(data_types.LocalDataSets.UNDATA_POPULATION)
+        wrangler = LocalStorageWranglingInfo(data_types.LocalDataSets.UNDATA_POPULATION).wrangling_strategy
 
         pop_wrangling = wrangler(self.sexes)
 

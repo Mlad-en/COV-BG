@@ -5,7 +5,7 @@ from code_base.data_wrangling.wrangling_strategies import local_file_wrangling_s
 class LocalStorageWranglingConfig:
 
     WRANGLING_STRATEGIES = {
-        LocalDataSets.UNDATA_Population: local_file_wrangling_strategies.WHOPopulationWranglingStrategy,
+        LocalDataSets.UNDATA_POPULATION: local_file_wrangling_strategies.WHOPopulationWranglingStrategy,
         LocalDataSets.ITALY_POPULATION: local_file_wrangling_strategies.ItalyPopulationWranglingStrategy,
         LocalDataSets.STD_POPULATION_EU: local_file_wrangling_strategies.StandardEuPopulationWranglingStrategy
 

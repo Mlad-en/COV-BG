@@ -142,7 +142,7 @@ class CalcASYR:
 
         return df
 
-    def calculate_asyr_eu(self) -> pd.DataFrame:
+    def calculate(self) -> pd.DataFrame:
         full_pop = self._group_pop(self.full_pop)
 
         exc_mort = self.exc_mort.merge(self.life_expectancy, on=[COL_HEAD.AGE, COL_HEAD.SEX, COL_HEAD.LOCATION])

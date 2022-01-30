@@ -10,7 +10,7 @@ class LocalDataFetcherInfo:
     """
 
     AVAILABLE_DATASETS = {
-        LocalDataSets.UNDATA_Population,
+        LocalDataSets.UNDATA_POPULATION,
         LocalDataSets.ITALY_POPULATION,
         LocalDataSets.COVID_MORTALITY_BG,
         LocalDataSets.CVD_EUROPE,
@@ -18,7 +18,7 @@ class LocalDataFetcherInfo:
     }
 
     FOLDER_LOCATION = {
-        LocalDataSets.UNDATA_Population: BaseFolderStructure.EU_POPULATION,
+        LocalDataSets.UNDATA_POPULATION: BaseFolderStructure.EU_POPULATION,
         LocalDataSets.ITALY_POPULATION: BaseFolderStructure.EU_POPULATION,
         LocalDataSets.CVD_EUROPE: BaseFolderStructure.EU_POPULATION,
         LocalDataSets.STD_POPULATION_EU: BaseFolderStructure.EU_POPULATION,
@@ -26,7 +26,7 @@ class LocalDataFetcherInfo:
     }
 
     FILES = {
-        LocalDataSets.UNDATA_Population:
+        LocalDataSets.UNDATA_POPULATION:
             'UNDATA_Population by age, sex and urban-rural residence_2019.csv',
         LocalDataSets.ITALY_POPULATION:
             'demo.istat - Resident population by age, sex and marital status on 1st January 2020.csv',
