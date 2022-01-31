@@ -63,6 +63,13 @@ The following publicly available datasets were used for this analysis:
     Dataset used to calculate ASYR by standardizing EU populations by age group across countries.
 
 
+## Additional Datasets of Interest
 
-<iframe width="100%" height="800" src="https://ec.europa.eu/eurostat/cache/digpub/ageing/vis/01_07/?country=EU27_2020&lang=en"></iframe>
+
+1. [Elderly population (65 years and over) by NUTS level 2 regions, 2020](https://ec.europa.eu/eurostat/cache/digpub/ageing/vis/01_07/?country=EU27_2020&lang=en) - Visual representation of the aging populations between different NUTS-2 regions in Europe.
+
+Provides a good visual aid to help get a feeling for the aging population across Europe.
+
+2. [Population pyramids](https://www.populationpyramid.net/europe/2020/) - provides a visual tool for the population distribution among age groups for both men and women for different EU countries for a given year.
+
 
